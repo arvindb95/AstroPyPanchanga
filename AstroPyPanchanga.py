@@ -4,6 +4,7 @@ from timezonefinder import TimezoneFinder
 from astropy.time import Time
 from astropy.coordinates import Angle, get_body, EarthLocation
 from astropy.table import Table
+import numpy as np
 
 # The difference in the position of the vernal equinox between the sāyana and nirāyana rāśis
 # Ref : Indian Astronomy : An Introduction - S Balachandra Rao - Pg 35
@@ -48,8 +49,8 @@ def calc_pañcāṅga(
 
     print("Time in UTC : ", test_date_utc_time)
 
-    moon_coord = get_body("moon", test_date_utc_time)
-    sun_coord = get_body("sun", test_date_utc_time)
+    moon_coord = get_body("moon", test_date_utc_time, location=observing_location)
+    sun_coord = get_body("sun", test_date_utc_time, location=observing_location)
 
     moon_lambda = moon_coord.geocentrictrueecliptic.lon.value
     sun_lambda = sun_coord.geocentrictrueecliptic.lon.value
@@ -64,17 +65,26 @@ def calc_pañcāṅga(
         tithi_theta = moon_lambda - sun_lambda
 
     final_tithi = tithi_theta / each_tithi
-    
+
     tithi_names_tab = Table.read("tithi_names.tex", format="latex")
     tithi_names = tithi_names_tab["tithi_names"].data
-    
+
     final_tithi_name = tithi_names[int(final_tithi)]
 
-    return final_tithi_name 
+    ### -------- Vaara -------- ###
+
+    day_of_the_week_at_t = test_date.strftime("%A")
+
+    vāra_names_tab = Table.read("vaara_names.tex", format="latex")
+    weekday = vāra_names_tab["weekday"].data
+    vāra_names = vāra_names_tab["vaara"].data
+
+    vāra = vāra_names[np.where(weekday == day_of_the_week_at_t)][0]
+
+    return final_tithi_name, vāra
+
 
 location = "Bengaluru, India"
-date_str = "2025-03-30 19:55:00"
+date_str = "2025-04-13 05:52:00"
 
 print(calc_pañcāṅga(location, date_str, filename="nakshatra_at_test_time.pdf"))
-
-
