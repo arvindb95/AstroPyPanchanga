@@ -81,7 +81,19 @@ def calc_pañcāṅga(
 
     vāra = vāra_names[np.where(weekday == day_of_the_week_at_t)][0]
 
-    return final_tithi_name, vāra
+    ### --------- Nakṣatra ----------- ###
+
+    nakṣatra_names_tab = Table.read("nakshatram_names.tex", format="latex")
+    nakṣatra_names = nakṣatra_names_tab["names"].data
+
+    nakṣatra_extent = 360 / 27
+    nakṣatra_id = np.floor((moon_lambda - ayanāṃśa) / nakṣatra_extent).astype(int)
+
+    print(nakṣatra_id)
+
+    final_nakṣatra = nakṣatra_names[nakṣatra_id]
+
+    return final_tithi_name, vāra, final_nakṣatra
 
 
 location = "Bengaluru, India"
