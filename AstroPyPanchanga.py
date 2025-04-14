@@ -9,7 +9,99 @@ import numpy as np
 # The difference in the position of the vernal equinox between the sāyana and nirāyana rāśis
 # Ref : Indian Astronomy : An Introduction - S Balachandra Rao - Pg 35
 
-ayanāṃśa = Angle("23d47m14.1s").degree
+ayanāṃśa = Angle("22d45m56s").degree
+tithi_extent = 360 / 30
+nakṣatra_extent = 360 / 27
+
+
+def calc_tithi(sun_lambda, moon_lambda, tithi_names_file="tithi_names.tex"):
+    """
+    Paramters
+    ---------
+    sun_lambda: float
+        The value of geocentrictrueecliptic longitude of the sun in degree
+
+    moon_lambda: float
+        The value of geocentrictrueecliptic longitude of the moon in degree
+
+    tithi_names_file -- str, default = "tithi_names.tex"
+        File with names of tithis
+
+    Returns
+    ---------
+    final_tithi: float
+        Real value of tithis elapsed since śuklapakṣa prathama represnted as 0, amāvāsya = 29
+
+    final_tithi_name: str
+        Name of tithi
+    """
+
+    if sun_lambda > moon_lambda:
+        tithi_theta = 360 - (sun_lambda - moon_lambda)
+    else:
+        tithi_theta = moon_lambda - sun_lambda
+
+    final_tithi = tithi_theta / tithi_extent
+
+    tithi_names_tab = Table.read(tithi_names_file, format="latex")
+    tithi_names = tithi_names_tab["tithi_names"].data
+
+    final_tithi_name = tithi_names[int(final_tithi)]
+
+    return final_tithi, final_tithi_name
+
+
+def cal_vāra(date, vāra_names_file="vaara_names.tex"):
+    """
+    Paramters
+    ---------
+    date: datetime.datetime
+        The date of interest
+
+    vāra_names_file -- str, default = "tithi_names.tex"
+        File with names of vāras
+
+    Returns
+    ---------
+    vāra: str
+        The vāra corresponding to the input date
+    """
+
+    day_of_the_week_at_t = date.strftime("%A")
+
+    vāra_names_tab = Table.read(vāra_names_file, format="latex")
+    weekday = vāra_names_tab["weekday"].data
+    vāra_names = vāra_names_tab["vaara"].data
+
+    vāra = vāra_names[np.where(weekday == day_of_the_week_at_t)][0]
+
+    return vāra
+
+
+def cal_nakṣatra(moon_lambda, nakṣatra_names_file="nakshatra_names.tex"):
+    """
+    Paramters
+    ---------
+    moon_lambda: float
+        The value of geocentrictrueecliptic longitude of the moon in degree
+
+    nakṣatra_names_file -- str, default = "nakshatra_names.tex"
+        File with names of vāras
+
+    Returns
+    ---------
+    nakṣatra: str
+        The vāra corresponding to the input date
+    """
+    nakṣatra_names_tab = Table.read(nakṣatra_names_file, format="latex")
+    nakṣatra_names = nakṣatra_names_tab["names"].data
+
+    nakṣatra_extent = 360 / 27
+    nakṣatra_id = np.floor((moon_lambda - ayanāṃśa) / nakṣatra_extent).astype(int)
+
+    nakṣatra = nakṣatra_names[nakṣatra_id]
+
+    return nakṣatra
 
 
 def calc_pañcāṅga(
@@ -21,13 +113,15 @@ def calc_pañcāṅga(
     """
     Calculates nakshatra and tithi at input time and makes plot of grahas
 
-    Inputs :
+    Paramters
+    ---------
     location = enter address of your location. Eg: "Mumbai, India"
     time = time at which to calculate panchanga
     time_format = format of input time
     filename = name of file to write the plot of position of grahas in nakshatra and rashi
 
-    Output :
+    Returns
+    ---------
     Plot saved at filename
     """
 
@@ -57,46 +151,20 @@ def calc_pañcāṅga(
 
     ### -------- Thithi -------- ###
 
-    each_tithi = 360 / 30
-
-    if sun_lambda > moon_lambda:
-        tithi_theta = 360 - (sun_lambda - moon_lambda)
-    else:
-        tithi_theta = moon_lambda - sun_lambda
-
-    final_tithi = tithi_theta / each_tithi
-
-    tithi_names_tab = Table.read("tithi_names.tex", format="latex")
-    tithi_names = tithi_names_tab["tithi_names"].data
-
-    final_tithi_name = tithi_names[int(final_tithi)]
+    tithi, tithi_name = calc_tithi(sun_lambda, moon_lambda)
 
     ### -------- Vaara -------- ###
 
-    day_of_the_week_at_t = test_date.strftime("%A")
-
-    vāra_names_tab = Table.read("vaara_names.tex", format="latex")
-    weekday = vāra_names_tab["weekday"].data
-    vāra_names = vāra_names_tab["vaara"].data
-
-    vāra = vāra_names[np.where(weekday == day_of_the_week_at_t)][0]
+    vāra = cal_vāra(test_date)
 
     ### --------- Nakṣatra ----------- ###
 
-    nakṣatra_names_tab = Table.read("nakshatram_names.tex", format="latex")
-    nakṣatra_names = nakṣatra_names_tab["names"].data
+    nakṣatra = cal_nakṣatra(moon_lambda)
 
-    nakṣatra_extent = 360 / 27
-    nakṣatra_id = np.floor((moon_lambda - ayanāṃśa) / nakṣatra_extent).astype(int)
-
-    print(nakṣatra_id)
-
-    final_nakṣatra = nakṣatra_names[nakṣatra_id]
-
-    return final_tithi_name, vāra, final_nakṣatra
+    return tithi_name, vāra, nakṣatra
 
 
 location = "Bengaluru, India"
-date_str = "2025-04-13 05:52:00"
+date_str = "2025-04-15 00:08:00"
 
 print(calc_pañcāṅga(location, date_str, filename="nakshatra_at_test_time.pdf"))
