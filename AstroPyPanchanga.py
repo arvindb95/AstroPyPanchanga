@@ -7,9 +7,12 @@ from astropy.table import Table
 import numpy as np
 
 # The difference in the position of the vernal equinox between the sāyana and nirāyana rāśis
-# Ref : Indian Astronomy : An Introduction - S Balachandra Rao - Pg 35
+# Lahiri ayanāṃśa at 2000 as coordinates being used by Astropy is J2000
+ayanāṃśa = (
+    Angle("23d50m30s").degree
+)  # I have guessed this value works for current panchanga. May have to verify this
 
-ayanāṃśa = Angle("22d45m56s").degree
+
 tithi_extent = 360 / 30
 nakṣatra_extent = 360 / 27
 
@@ -96,7 +99,6 @@ def cal_nakṣatra(moon_lambda, nakṣatra_names_file="nakshatra_names.tex"):
     nakṣatra_names_tab = Table.read(nakṣatra_names_file, format="latex")
     nakṣatra_names = nakṣatra_names_tab["names"].data
 
-    nakṣatra_extent = 360 / 27
     nakṣatra_id = np.floor((moon_lambda - ayanāṃśa) / nakṣatra_extent).astype(int)
 
     nakṣatra = nakṣatra_names[nakṣatra_id]
@@ -165,6 +167,6 @@ def calc_pañcāṅga(
 
 
 location = "Bengaluru, India"
-date_str = "2025-04-15 00:08:00"
+date_str = "2025-04-15 00:13:00"
 
 print(calc_pañcāṅga(location, date_str, filename="nakshatra_at_test_time.pdf"))
