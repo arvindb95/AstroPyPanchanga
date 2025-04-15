@@ -6,11 +6,14 @@ from astropy.coordinates import Angle, get_body, EarthLocation
 from astropy.table import Table
 import numpy as np
 
+from plot_panchanga import *
+
 # The difference in the position of the vernal equinox between the sāyana and nirāyana rāśis
 # Lahiri ayanāṃśa at 2000 as coordinates being used by Astropy is J2000
-ayanāṃśa = (
-    Angle("23d50m30s").degree
-)  # I have guessed this value works for current panchanga. May have to verify this
+# Refernce https://www.astro.com/swisseph/slae/2000/slae_2000.pdf -
+# use ayanāṃśa for January 2000 and subtract delta t = 63.83 to convert to terrestrial time (J2000)
+#
+ayanāṃśa = Angle("23d50m21.17s").degree
 
 
 tithi_extent = 360 / 30
@@ -163,10 +166,23 @@ def calc_pañcāṅga(
 
     nakṣatra = cal_nakṣatra(moon_lambda)
 
+    ### --------- Plotting ------------ ###
+
+    make_circle_plot(
+        test_date_utc_time,
+        nakṣatra_extent,
+        30,
+        ayanāṃśa,
+        tithi,
+        nakṣatra,
+        moon_lambda,
+        sun_lambda,
+    )
+
     return tithi_name, vāra, nakṣatra
 
 
-location = "Bengaluru, India"
+location = "Chennai, India"
 date_str = "2025-04-15 00:13:00"
 
 print(calc_pañcāṅga(location, date_str, filename="nakshatra_at_test_time.pdf"))
