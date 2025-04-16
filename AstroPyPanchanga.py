@@ -15,9 +15,12 @@ from plot_panchanga import *
 #
 ayanāṃśa = Angle("23d50m21.17s").degree
 
-
 tithi_extent = 360 / 30
+
 nakṣatra_extent = 360 / 27
+pāda_extent = nakṣatra_extent / 4
+
+rāśi_extent = 30
 
 
 def calc_tithi(sun_lambda, moon_lambda, tithi_names_file="tithi_names.tex"):
@@ -106,7 +109,22 @@ def cal_nakṣatra(moon_lambda, nakṣatra_names_file="nakshatra_names.tex"):
 
     nakṣatra = nakṣatra_names[nakṣatra_id]
 
-    return nakṣatra
+    # pada
+
+    pāda_remainder = (moon_lambda - ayanāṃśa) % nakṣatra_extent
+
+    final_pāda = int(pāda_remainder / pāda_extent) + 1
+
+    if final_pāda == 1:
+        final_pāda_text = r"\sam{१}"
+    elif final_pāda == 2:
+        final_pāda_text = r"\sam{२}"
+    elif final_pāda == 3:
+        final_pāda_text = r"\sam{३}"
+    else:
+        final_pāda_text = r"\sam{४}"
+
+    return nakṣatra, final_pāda_text
 
 
 def calc_pañcāṅga(
@@ -164,25 +182,30 @@ def calc_pañcāṅga(
 
     ### --------- Nakṣatra ----------- ###
 
-    nakṣatra = cal_nakṣatra(moon_lambda)
+    nakṣatra, pāda = cal_nakṣatra(moon_lambda)
 
     ### --------- Plotting ------------ ###
 
     make_circle_plot(
         test_date_utc_time,
+        location,
+        date_str,
         nakṣatra_extent,
         30,
         ayanāṃśa,
         tithi,
+        tithi_name,
+        vāra,
         nakṣatra,
+        pāda,
         moon_lambda,
         sun_lambda,
     )
 
-    return tithi_name, vāra, nakṣatra
+    return tithi_name, vāra, nakṣatra + pāda
 
 
-location = "Chennai, India"
-date_str = "2025-04-15 00:13:00"
+location = "Bengaluru, India"
+date_str = "2025-04-17 05:54:00"
 
 print(calc_pañcāṅga(location, date_str, filename="nakshatra_at_test_time.pdf"))

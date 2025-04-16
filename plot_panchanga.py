@@ -19,30 +19,32 @@ import astropy.units as u
 # Rahu - Blue - crocodile
 # Ketu - Grey - sword
 
-def calc_rahu_ketu_pos(known_eclipse_time,test_date_utc_time,moon_lambda_known_eclipse):
-    
-    ketu_speed = 360/18.612958 # deg per year
 
-    if (test_date_utc_time.jd > known_eclipse_time.jd):
-        time_diff = ((test_date_utc_time - known_eclipse_time).value*u.d).to(u.year)
-        ketu_degrees_moved = (ketu_speed*time_diff.value)%360
+def calc_rahu_ketu_pos(
+    known_eclipse_time, test_date_utc_time, moon_lambda_known_eclipse
+):
+    ketu_speed = 360 / 18.612958  # deg per year
+
+    if test_date_utc_time.jd > known_eclipse_time.jd:
+        time_diff = ((test_date_utc_time - known_eclipse_time).value * u.d).to(u.year)
+        ketu_degrees_moved = (ketu_speed * time_diff.value) % 360
         ketu_lambda = moon_lambda_known_eclipse - ketu_degrees_moved
-        if (ketu_lambda < 0):
+        if ketu_lambda < 0:
             ketu_lambda = 360 - ketu_lambda
     else:
-        time_diff = ((known_eclipse_time - test_date_utc_time).value*u.d).to(u.year)
-        ketu_degrees_moved = (ketu_speed*time_diff.value)%360
+        time_diff = ((known_eclipse_time - test_date_utc_time).value * u.d).to(u.year)
+        ketu_degrees_moved = (ketu_speed * time_diff.value) % 360
         ketu_lambda = moon_lambda_known_eclipse + ketu_degrees_moved
-        if (ketu_degrees_moved > 360):
+        if ketu_degrees_moved > 360:
             ketu_lambda = 360 - ketu_lambda
 
-
-    if (ketu_lambda < 180):
+    if ketu_lambda < 180:
         rahu_lambda = 180 + ketu_lambda
     else:
         rahu_lambda = (180 + ketu_lambda) - 360
 
     return rahu_lambda, ketu_lambda
+
 
 def plot_moon_phase(day, drawing_origin, radius, fig, ax):
     center = np.array([0, 0])
@@ -206,6 +208,8 @@ def plot_sun(drawing_origin, radius, fig, ax):
         center, radius, ec="orange", fc="yellow", transform=trans, clip_on=False
     )
     ax.add_patch(circle)
+
+    list_of_patches = []
     for theta in np.arange(0, 2 * np.pi, np.pi / 6):
         triangle = mpatches.RegularPolygon(
             [1.2 * radius * np.cos(theta), 1.2 * radius * np.sin(theta)],
@@ -492,11 +496,16 @@ def plot_ketu(drawing_origin, scale, fig, ax):
 
 def make_circle_plot(
     test_date_utc_time,
+    location,
+    date_str,
     nakṣatra_extent,
     rāśi_extent,
     ayanāṃśa,
     tithi,
+    tithi_name,
+    vāra,
     nakṣatra,
+    pādam,
     moon_lambda,
     sun_lambda,
     nakṣatra_names_file="nakshatra_names.tex",
@@ -574,7 +583,7 @@ def make_circle_plot(
 
     rāśi_edges = np.linspace(ayanāṃśa, ayanāṃśa + (rāśi_extent * 11), 12)
     rāśi_centers = rāśi_edges + rāśi_extent / 2
-    rāśi_names_tab = Table.read("rashi_names.tex", format="latex")
+    rāśi_names_tab = Table.read(rāśi_names_file, format="latex")
     rāśi_names = rāśi_names_tab["names"].data
 
     for i in range(len(rāśi_edges)):
@@ -647,7 +656,7 @@ def make_circle_plot(
     plot_outer_graha("mangala", [np.deg2rad(mars_lambda), 1.9], 0.05, fig, ax)
     plot_outer_graha("guru", [np.deg2rad(jupiter_lambda), 1.9], 0.05, fig, ax)
     plot_outer_graha("shani", [np.deg2rad(saturn_lambda), 1.9], 0.05, fig, ax)
-   
+
     ##  rahu and ketu  ##
 
     # This eclipse happens when moon was in Rahu's postion
@@ -664,6 +673,107 @@ def make_circle_plot(
 
     plot_rahu([np.deg2rad(rahu_lambda), 1.9], 5, fig, ax)
     plot_ketu([np.deg2rad(ketu_lambda), 1.9], 5, fig, ax)
+
+    ################ legend for grahas #####################
+
+    inv = ax.transData.inverted()
+
+    xpos = 1100
+    ypos = 450
+
+    sun_legend_pos = inv.transform((xpos, ypos))
+    sun_label_pos = inv.transform((xpos + 45, ypos - 5))
+    moon_legend_pos = inv.transform((xpos, ypos - 50))
+    moon_label_pos = inv.transform((xpos + 45, ypos - 55))
+    mercury_legend_pos = inv.transform((xpos, ypos - 100))
+    mercury_label_pos = inv.transform((xpos + 45, ypos - 105))
+    venus_legend_pos = inv.transform((xpos, ypos - 150))
+    venus_label_pos = inv.transform((xpos + 45, ypos - 155))
+    mars_legend_pos = inv.transform((xpos, ypos - 200))
+    mars_label_pos = inv.transform((xpos + 45, ypos - 205))
+    jupiter_legend_pos = inv.transform((xpos, ypos - 250))
+    jupiter_label_pos = inv.transform((xpos + 45, ypos - 255))
+    saturn_legend_pos = inv.transform((xpos, ypos - 300))
+    saturn_label_pos = inv.transform((xpos + 45, ypos - 305))
+    rahu_legend_pos = inv.transform((xpos, ypos - 350))
+    rahu_label_pos = inv.transform((xpos + 45, ypos - 355))
+    ketu_legend_pos = inv.transform((xpos, ypos - 400))
+    ketu_label_pos = inv.transform((xpos + 45, ypos - 405))
+
+    plot_sun(sun_legend_pos, 0.1, fig, ax)
+    plt.text(sun_label_pos[0], sun_label_pos[1], "\sam{सूर्यः } ")
+    plot_moon_phase(tithi, moon_legend_pos, 0.1, fig, ax)
+    plt.text(moon_label_pos[0], moon_label_pos[1], "\sam{चन्द्रः } ")
+    plot_inner_graha_phase(
+        "budha", mercury_angle_to_sun, mercury_legend_pos, 0.05, fig, ax
+    )
+    plt.text(mercury_label_pos[0], mercury_label_pos[1], "\sam{बुधः } ")
+    plot_inner_graha_phase(
+        "shukra", venus_angle_to_sun, venus_legend_pos, 0.05, fig, ax
+    )
+    plt.text(venus_label_pos[0], venus_label_pos[1], "\sam{शुक्रः } ")
+    plot_outer_graha("mangala", mars_legend_pos, 0.05, fig, ax)
+    plt.text(mars_label_pos[0], mars_label_pos[1], "\sam{मङ्गलः } ")
+    plot_outer_graha("guru", jupiter_legend_pos, 0.05, fig, ax)
+    plt.text(jupiter_label_pos[0], jupiter_label_pos[1], "\sam{बृहस्पतिः } ")
+    plot_outer_graha("shani", saturn_legend_pos, 0.05, fig, ax)
+    plt.text(saturn_label_pos[0], saturn_label_pos[1], "\sam{शनैश्चरः } ")
+
+    plot_rahu(rahu_legend_pos, 5, fig, ax)
+    plt.text(rahu_label_pos[0], rahu_label_pos[1], "\sam{राहुः} ")
+    plot_ketu(ketu_legend_pos, 5, fig, ax)
+    plt.text(ketu_label_pos[0], ketu_label_pos[1], "\sam{केतुः} ")
+
+    ################ legend for panchanga #####################
+    xpos_panch = -550
+    ypos_panch = 500
+    plt.text(
+        inv.transform((xpos_panch, ypos_panch))[0],
+        inv.transform((xpos_panch, ypos_panch - 100))[1],
+        r"\sam{" + location + "}",
+    )
+
+    plt.text(
+        inv.transform((xpos_panch, ypos_panch - 30))[0],
+        inv.transform((xpos_panch, ypos_panch - 130))[1],
+        r"\sam{" + date_str.split(" ")[0] + "}",
+    )
+    plt.text(
+        inv.transform((xpos_panch, ypos_panch - 60))[0],
+        inv.transform((xpos_panch, ypos_panch - 160))[1],
+        r"\sam{" + date_str.split(" ")[1] + "}",
+    )
+
+    plt.text(
+        inv.transform((xpos_panch + 50, ypos_panch - 160))[0],
+        inv.transform((xpos_panch + 50, ypos_panch - 160))[1],
+        r"\sam{पञ्चाङ्ग }",
+        bbox=dict(facecolor="none", edgecolor="white"),
+    )
+
+    plt.text(
+        inv.transform((xpos_panch, ypos_panch - 220))[0],
+        inv.transform((xpos_panch, ypos_panch - 220))[1],
+        tithi_name,
+    )
+
+    plt.text(
+        inv.transform((xpos_panch, ypos_panch - 260))[0],
+        inv.transform((xpos_panch, ypos_panch - 260))[1],
+        vāra,
+    )
+
+    plt.text(
+        inv.transform((xpos_panch, ypos_panch - 300))[0],
+        inv.transform((xpos_panch, ypos_panch - 300))[1],
+        nakṣatra + r"\hspace{5pt}" + pādam,
+    )
+
+    # plt.text(inv.transform((-200, 220))[0], inv.transform((-200, 220))[1], final_yoga)
+
+    plt.title(r"\sam{ॐ }", fontsize=20)
+
+    # ---------------------------------------
 
     ax.set_xticks(np.deg2rad(nakṣatra_edges))
     ax.set_xticklabels(nakṣatra_edge_labels, fontsize=5)
