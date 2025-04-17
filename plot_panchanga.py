@@ -505,7 +505,9 @@ def make_circle_plot(
     tithi_name,
     vāra,
     nakṣatra,
-    pādam,
+    pāda,
+    yoga,
+    karaṇa,
     moon_lambda,
     sun_lambda,
     nakṣatra_names_file="nakshatra_names.tex",
@@ -766,9 +768,19 @@ def make_circle_plot(
     plt.text(
         inv.transform((xpos_panch, ypos_panch - 300))[0],
         inv.transform((xpos_panch, ypos_panch - 300))[1],
-        nakṣatra + r"\hspace{5pt}" + pādam,
+        nakṣatra + r"\hspace{5pt}" + pāda,
     )
 
+    plt.text(
+        inv.transform((xpos_panch, ypos_panch - 340))[0],
+        inv.transform((xpos_panch, ypos_panch - 340))[1],
+        yoga,
+    )
+    plt.text(
+        inv.transform((xpos_panch, ypos_panch - 380))[0],
+        inv.transform((xpos_panch, ypos_panch - 380))[1],
+        karaṇa,
+    )
     # plt.text(inv.transform((-200, 220))[0], inv.transform((-200, 220))[1], final_yoga)
 
     plt.title(r"\sam{ॐ }", fontsize=20)

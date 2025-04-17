@@ -115,23 +115,83 @@ def cal_nakṣatra(moon_lambda, nakṣatra_names_file="nakshatra_names.tex"):
 
     final_pāda = int(pāda_remainder / pāda_extent) + 1
 
-    if final_pāda == 1:
-        final_pāda_text = r"\sam{१}"
-    elif final_pāda == 2:
-        final_pāda_text = r"\sam{२}"
-    elif final_pāda == 3:
-        final_pāda_text = r"\sam{३}"
-    else:
-        final_pāda_text = r"\sam{४}"
+    pāda_values = [r"\sam{१}", r"\sam{२}", r"\sam{३}", r"\sam{४}"]
+
+    final_pāda_text = pāda_values[final_pāda - 1]
 
     return nakṣatra, final_pāda_text
+
+
+def calc_yoga(sun_lambda, moon_lambda, yoga_names_file="yoga_names.tex"):
+    """
+    Paramters
+    ---------
+    sun_lambda: float
+        The value of geocentrictrueecliptic longitude of the sun in degree
+
+    moon_lambda: float
+        The value of geocentrictrueecliptic longitude of the moon in degree
+
+    yoga_names_file -- str, default = "yoga_names.tex"
+        File with names of yogas
+
+    Returns
+    ---------
+    yoga : str
+        The vaue of yoga at given time
+    """
+    ### -------- Yoga --------###
+    yoga_names_tab = Table.read(yoga_names_file, format="latex")
+    yoga_names = yoga_names_tab["names"].data
+
+    yoga_extent = nakṣatra_extent
+
+    yoga_id = np.floor(
+        ((sun_lambda + moon_lambda - 2 * ayanāṃśa) % 360) / yoga_extent
+    ).astype(int)
+
+    yoga = yoga_names[yoga_id]
+
+    return yoga
+
+
+def calc_karaṇa(sun_lambda, moon_lambda, karaṇa_names_file="karana_names.tex"):
+    """
+    Paramters
+    ---------
+    sun_lambda: float
+        The value of geocentrictrueecliptic longitude of the sun in degree
+
+    moon_lambda: float
+        The value of geocentrictrueecliptic longitude of the moon in degree
+
+    karaṇa_names_file -- str, default = "karana_names.tex"
+        File with names of tithis
+
+    Returns
+    ---------
+    """
+
+    if sun_lambda > moon_lambda:
+        karaṇa_theta = 360 - (sun_lambda - moon_lambda)
+    else:
+        karaṇa_theta = moon_lambda - sun_lambda
+
+    karaṇa_id = int(karaṇa_theta / tithi_extent * 2)
+
+    karaṇa_names_tab = Table.read(karaṇa_names_file, format="latex")
+    karaṇa_names = karaṇa_names_tab["names"].data
+
+    karaṇa = karaṇa_names[karaṇa_id]
+
+    return karaṇa
 
 
 def calc_pañcāṅga(
     location,
     time,
     time_format="%Y-%m-%d %H:%M:%S",
-    filename="nakshatra_at_test_time.pdf",
+    plotfilename="panchanga_at_test_time.pdf",
 ):
     """
     Calculates nakshatra and tithi at input time and makes plot of grahas
@@ -172,17 +232,25 @@ def calc_pañcāṅga(
     moon_lambda = moon_coord.geocentrictrueecliptic.lon.value
     sun_lambda = sun_coord.geocentrictrueecliptic.lon.value
 
-    ### -------- Thithi -------- ###
+    ### -------- tithi -------- ###
 
     tithi, tithi_name = calc_tithi(sun_lambda, moon_lambda)
 
-    ### -------- Vaara -------- ###
+    ### -------- vāra -------- ###
 
     vāra = cal_vāra(test_date)
 
-    ### --------- Nakṣatra ----------- ###
+    ### --------- nakṣatra ----------- ###
 
     nakṣatra, pāda = cal_nakṣatra(moon_lambda)
+
+    ### --------- yoga ------------ ###
+
+    yoga = calc_yoga(sun_lambda, moon_lambda)
+
+    ### --------- karaṇa ------------- ###
+
+    karaṇa = calc_karaṇa(sun_lambda, moon_lambda)
 
     ### --------- Plotting ------------ ###
 
@@ -198,14 +266,17 @@ def calc_pañcāṅga(
         vāra,
         nakṣatra,
         pāda,
+        yoga,
+        karaṇa,
         moon_lambda,
         sun_lambda,
+        plotfile=plotfilename,
     )
 
-    return tithi_name, vāra, nakṣatra + pāda
+    return tithi_name, vāra, nakṣatra + pāda, karaṇa
 
 
-location = "Bengaluru, India"
-date_str = "2025-04-17 05:54:00"
+location = "Ayodhya, India"
+date_str = "2020-08-05 12:30:00"
 
-print(calc_pañcāṅga(location, date_str, filename="nakshatra_at_test_time.pdf"))
+print(calc_pañcāṅga(location, date_str))
