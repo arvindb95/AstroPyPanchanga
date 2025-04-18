@@ -2,9 +2,10 @@ from datetime import datetime
 import pytz
 from timezonefinder import TimezoneFinder
 from astropy.time import Time
-from astropy.coordinates import Angle, get_body, EarthLocation
+from astropy.coordinates import Angle, get_body, EarthLocation, SkyCoord
 from astropy.table import Table
 import numpy as np
+import astropy.units as u
 
 from plot_panchanga import *
 
@@ -271,6 +272,21 @@ def calc_pañcāṅga(
         moon_lambda,
         sun_lambda,
         plotfile=plotfilename,
+    )
+
+    rising_rāśi = SkyCoord(
+        alt=0 * u.deg,
+        az=90 * u.deg,
+        frame="altaz",
+        obstime=test_date_utc_time,
+        location=observing_location,
+    )
+
+    print(
+        "rising rāśi : ",
+        np.floor(
+            (rising_rāśi.geocentrictrueecliptic.lon.value - ayanāṃśa) / rāśi_extent
+        ).astype(int),
     )
 
     return tithi_name, vāra, nakṣatra + pāda, karaṇa

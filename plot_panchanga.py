@@ -598,7 +598,10 @@ def make_circle_plot(
         if 90 < rāśi_centers[i] < 265:
             rotation_val = rāśi_centers[i] + 180
 
-        if (sun_lambda / rāśi_edges[i]) > 1:
+        if (
+            rāśi_edges[np.floor((sun_lambda - ayanāṃśa) / 30).astype(int)]
+            == rāśi_edges[i]
+        ):
             color_val = "white"
             alpha_val = 1
         ax.text(
