@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.transforms as transforms
 import matplotlib as mpl
-from astropy.coordinates import Angle, get_body
+from astropy.coordinates import Angle, get_body, EarthLocation
 from astropy.table import Table
 from astropy.time import Time
 import astropy.units as u
@@ -510,6 +510,7 @@ def make_circle_plot(
     karaṇa,
     moon_lambda,
     sun_lambda,
+    lagna_lambda,
     nakṣatra_names_file="nakshatra_names.tex",
     rāśi_names_file="rashi_names.tex",
     plotfile="panchanga_at_test_time.pdf",
@@ -538,6 +539,8 @@ def make_circle_plot(
     mpl.rcParams.update(params)
 
     plt.style.use("dark_background")
+
+    observing_location = EarthLocation.of_address(location)
 
     fig, ax = plt.subplots(subplot_kw={"projection": "polar"}, figsize=(7, 5))
 
@@ -617,18 +620,18 @@ def make_circle_plot(
 
     ### Plotting grahas
     ### Plot Sun
-    plot_sun(np.array([np.deg2rad(sun_lambda), 0.8]), 0.1, fig, ax)
+    plot_sun(np.array([np.deg2rad(sun_lambda), 0.9]), 0.08, fig, ax)
 
     ## Plot moon with phase ##
-    plot_moon_phase(tithi, np.array([np.deg2rad(moon_lambda), 1.8]), 0.1, fig, ax)
+    plot_moon_phase(tithi, np.array([np.deg2rad(moon_lambda), 1.9]), 0.08, fig, ax)
 
     ### Inner grahas ###
 
     mercury_lambda = get_body(
-        "mercury", test_date_utc_time
+        "mercury", test_date_utc_time, location=observing_location
     ).geocentrictrueecliptic.lon.value
     venus_lambda = get_body(
-        "venus", test_date_utc_time
+        "venus", test_date_utc_time, location=observing_location
     ).geocentrictrueecliptic.lon.value
 
     if sun_lambda > mercury_lambda:
@@ -650,12 +653,14 @@ def make_circle_plot(
 
     ### Outer grahas ###
 
-    mars_lambda = get_body("mars", test_date_utc_time).geocentrictrueecliptic.lon.value
+    mars_lambda = get_body(
+        "mars", test_date_utc_time, location=observing_location
+    ).geocentrictrueecliptic.lon.value
     jupiter_lambda = get_body(
-        "jupiter", test_date_utc_time
+        "jupiter", test_date_utc_time, location=observing_location
     ).geocentrictrueecliptic.lon.value
     saturn_lambda = get_body(
-        "saturn", test_date_utc_time
+        "saturn", test_date_utc_time, location=observing_location
     ).geocentrictrueecliptic.lon.value
 
     plot_outer_graha("mangala", [np.deg2rad(mars_lambda), 1.9], 0.05, fig, ax)
@@ -668,7 +673,7 @@ def make_circle_plot(
     known_eclipse_time = Time("2023-04-20 04:16:49", format="iso", scale="utc")
 
     moon_lambda_known_eclipse = get_body(
-        "moon", known_eclipse_time
+        "moon", known_eclipse_time, location=observing_location
     ).geocentrictrueecliptic.lon.value
     rahu_lambda, ketu_lambda = calc_rahu_ketu_pos(
         known_eclipse_time, test_date_utc_time, moon_lambda_known_eclipse
@@ -678,6 +683,18 @@ def make_circle_plot(
 
     plot_rahu([np.deg2rad(rahu_lambda), 1.9], 5, fig, ax)
     plot_ketu([np.deg2rad(ketu_lambda), 1.9], 5, fig, ax)
+
+    ## lagna ##
+
+    ax.text(
+        np.deg2rad(lagna_lambda),
+        0.9,
+        r"\sam{लग्न}",
+        color="yellow",
+        rotation=lagna_lambda + 90,
+        ha="center",
+        va="center",
+    )
 
     ################ legend for grahas #####################
 
@@ -705,9 +722,9 @@ def make_circle_plot(
     ketu_legend_pos = inv.transform((xpos, ypos - 400))
     ketu_label_pos = inv.transform((xpos + 45, ypos - 405))
 
-    plot_sun(sun_legend_pos, 0.1, fig, ax)
+    plot_sun(sun_legend_pos, 0.08, fig, ax)
     plt.text(sun_label_pos[0], sun_label_pos[1], "\sam{सूर्यः } ")
-    plot_moon_phase(tithi, moon_legend_pos, 0.1, fig, ax)
+    plot_moon_phase(tithi, moon_legend_pos, 0.08, fig, ax)
     plt.text(moon_label_pos[0], moon_label_pos[1], "\sam{चन्द्रः } ")
     plot_inner_graha_phase(
         "budha", mercury_angle_to_sun, mercury_legend_pos, 0.05, fig, ax

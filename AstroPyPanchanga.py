@@ -253,6 +253,16 @@ def calc_pañcāṅga(
 
     karaṇa = calc_karaṇa(sun_lambda, moon_lambda)
 
+    ### --------- lagna ------------- ###
+
+    rising_rāśi = SkyCoord(
+        alt=0 * u.deg,
+        az=90 * u.deg,
+        frame="altaz",
+        obstime=test_date_utc_time,
+        location=observing_location,
+    )
+
     ### --------- Plotting ------------ ###
 
     make_circle_plot(
@@ -271,22 +281,8 @@ def calc_pañcāṅga(
         karaṇa,
         moon_lambda,
         sun_lambda,
+        rising_rāśi.geocentrictrueecliptic.lon.value,
         plotfile=plotfilename,
-    )
-
-    rising_rāśi = SkyCoord(
-        alt=0 * u.deg,
-        az=90 * u.deg,
-        frame="altaz",
-        obstime=test_date_utc_time,
-        location=observing_location,
-    )
-
-    print(
-        "rising rāśi : ",
-        np.floor(
-            (rising_rāśi.geocentrictrueecliptic.lon.value - ayanāṃśa) / rāśi_extent
-        ).astype(int),
     )
 
     return tithi_name, vāra, nakṣatra + pāda, karaṇa
