@@ -285,6 +285,25 @@ def calc_pañcāṅga(
         plotfile=plotfilename,
     )
 
+    make_jatakam_plot(
+        test_date_utc_time,
+        location,
+        date_str,
+        nakṣatra_extent,
+        30,
+        ayanāṃśa,
+        tithi,
+        tithi_name,
+        vāra,
+        nakṣatra,
+        pāda,
+        yoga,
+        karaṇa,
+        moon_lambda,
+        sun_lambda,
+        rising_rāśi.geocentrictrueecliptic.lon.value,
+    )
+
     return tithi_name, vāra, nakṣatra + pāda, karaṇa
 
 
