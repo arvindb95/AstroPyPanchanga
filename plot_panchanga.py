@@ -7,6 +7,7 @@ from astropy.coordinates import Angle, get_body, EarthLocation
 from astropy.table import Table
 from astropy.time import Time
 import astropy.units as u
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 #### Colors for grahas ####
 # Sun - Surya - Red - circle
@@ -864,7 +865,10 @@ def make_jatakam_plot(
     mpl.rcParams.update(params)
 
     fig, ax = plt.subplots()
+    divider = make_axes_locatable(ax)
+    pañcāṅga_ax = divider.append_axes("left", 0.5, sharey=ax)
 
+    fig.suptitle(r"\sam{{ॐ }}", color="b")
     ax.vlines([0, 2, 6, 8], ymin=0, ymax=8, color="b")
     ax.vlines([4, 4], ymin=[0, 6], ymax=[2, 8], color="b")
     ax.hlines([0, 2, 6, 8], xmin=0, xmax=8, color="b")
@@ -887,87 +891,139 @@ def make_jatakam_plot(
     rāśi_tab = Table.read(rāśi_names_file, format="latex")
 
     rāśi_names = rāśi_tab["names"].data
+    ### Inner grahas ###
+    observing_location = EarthLocation.of_address(location)
+    mercury_lambda = get_body(
+        "mercury", test_date_utc_time, location=observing_location
+    ).geocentrictrueecliptic.lon.value
+    venus_lambda = get_body(
+        "venus", test_date_utc_time, location=observing_location
+    ).geocentrictrueecliptic.lon.value
 
-    print(rāśi_names)
-    for i in range(len(rāśi_names)):
-        ax.text(
-            coord_for_rāśi[i][0],
-            coord_for_rāśi[i][1],
-            rāśi_names[i],
-            ha="center",
-            va="center",
-            color="b",
-        )
+    ### Outer grahas ###
+
+    mars_lambda = get_body(
+        "mars", test_date_utc_time, location=observing_location
+    ).geocentrictrueecliptic.lon.value
+    jupiter_lambda = get_body(
+        "jupiter", test_date_utc_time, location=observing_location
+    ).geocentrictrueecliptic.lon.value
+    saturn_lambda = get_body(
+        "saturn", test_date_utc_time, location=observing_location
+    ).geocentrictrueecliptic.lon.value
+
+    ##  rahu and ketu  ##
+
+    # This eclipse happens when moon was in Rahu's postion
+    known_eclipse_time = Time("2023-04-20 04:16:49", format="iso", scale="utc")
+
+    moon_lambda_known_eclipse = get_body(
+        "moon", known_eclipse_time, location=observing_location
+    ).geocentrictrueecliptic.lon.value
+    rahu_lambda, ketu_lambda = calc_rahu_ketu_pos(
+        known_eclipse_time, test_date_utc_time, moon_lambda_known_eclipse
+    )
+
+    rahu_lambda, ketu_lambda = ketu_lambda, rahu_lambda
+
+    lst_of_grahas_pos = [
+        sun_lambda,
+        moon_lambda,
+        mercury_lambda,
+        venus_lambda,
+        mars_lambda,
+        jupiter_lambda,
+        saturn_lambda,
+        rahu_lambda,
+        ketu_lambda,
+    ]
+    graha_tab = Table.read("graha_names.tex", format="latex")
+
+    graha_names = graha_tab["names"].data
+
+    for graha_id in range(len(graha_names)):
+        sel_rāśi_id = np.floor(
+            (lst_of_grahas_pos[graha_id] - ayanāṃśa) / rāśi_extent
+        ).astype(int)
+        print(graha_names[graha_id], rāśi_names[sel_rāśi_id])
 
     ################ legend for panchanga #####################
-    inv = ax.transData.inverted()
-    xpos_panch = -1500
-    ypos_panch = 2500
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch))[0],
-        inv.transform((xpos_panch, ypos_panch - 100))[1],
+    pañcāṅga_ax.text(
+        0.2,
+        7.5,
         r"\sam{" + location + "}",
         color="b",
+        va="center",
     )
 
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 150))[0],
-        inv.transform((xpos_panch, ypos_panch - 280))[1],
+    pañcāṅga_ax.text(
+        0.2,
+        7.0,
         r"\sam{" + date_str.split(" ")[0] + "}",
         color="b",
+        va="center",
     )
 
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 350))[0],
-        inv.transform((xpos_panch, ypos_panch - 400))[1],
+    pañcāṅga_ax.text(
+        0.2,
+        6.5,
         r"\sam{" + date_str.split(" ")[1] + "}",
         color="b",
+        va="center",
     )
 
-    plt.text(
-        inv.transform((xpos_panch + 50, ypos_panch - 600))[0],
-        inv.transform((xpos_panch + 50, ypos_panch - 650))[1],
+    pañcāṅga_ax.text(
+        1,
+        4.0,
         r"\sam{पञ्चाङ्ग }",
         bbox=dict(facecolor="none", edgecolor="b"),
         color="b",
+        va="center",
+        ha="center",
     )
 
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 850))[0],
-        inv.transform((xpos_panch, ypos_panch - 900))[1],
+    pañcāṅga_ax.text(
+        0.2,
+        2.5,
         tithi_name,
         color="b",
+        va="center",
     )
 
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 1000))[0],
-        inv.transform((xpos_panch, ypos_panch - 1050))[1],
+    pañcāṅga_ax.text(
+        0.2,
+        2.0,
         vāra,
         color="b",
+        va="center",
     )
 
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 1150))[0],
-        inv.transform((xpos_panch, ypos_panch - 1200))[1],
+    pañcāṅga_ax.text(
+        0.2,
+        1.5,
         nakṣatra + r"\hspace{5pt}" + pāda,
         color="b",
+        va="center",
     )
 
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 1300))[0],
-        inv.transform((xpos_panch, ypos_panch - 1350))[1],
+    pañcāṅga_ax.text(
+        0.2,
+        1.0,
         yoga,
         color="b",
+        va="center",
     )
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 1450))[0],
-        inv.transform((xpos_panch, ypos_panch - 1500))[1],
+    pañcāṅga_ax.text(
+        0.2,
+        0.5,
         karaṇa,
         color="b",
+        va="center",
     )
 
     ax.set_aspect("equal")
-    ax.set_title(r"\sam{{ॐ }}", color="b")
+    # pañcāṅga_ax.set_aspect("equal")
+    pañcāṅga_ax.axis("off")
     ax.axis("off")
     plt.savefig(plotfile, bbox_inches="tight")
 
