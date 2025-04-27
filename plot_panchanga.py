@@ -8,6 +8,7 @@ from astropy.table import Table
 from astropy.time import Time
 import astropy.units as u
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from adjustText import adjust_text
 
 #### Colors for grahas ####
 # Sun - Surya - Red - circle
@@ -936,16 +937,29 @@ def make_jatakam_plot(
         saturn_lambda,
         rahu_lambda,
         ketu_lambda,
+        lagna_lambda,
     ]
     graha_tab = Table.read("graha_names.tex", format="latex")
 
     graha_names = graha_tab["names"].data
 
+    texts = []
+
     for graha_id in range(len(graha_names)):
         sel_rāśi_id = np.floor(
             (lst_of_grahas_pos[graha_id] - ayanāṃśa) / rāśi_extent
         ).astype(int)
-        print(graha_names[graha_id], rāśi_names[sel_rāśi_id])
+        t = ax.text(
+            coord_for_rāśi[sel_rāśi_id][0],
+            coord_for_rāśi[sel_rāśi_id][1],
+            graha_names[graha_id],
+            color="b",
+            ha="center",
+            # va="center",
+        )
+        texts.append(t)
+
+    adjust_text(texts, ax=ax)
 
     ################ legend for panchanga #####################
     pañcāṅga_ax.text(
