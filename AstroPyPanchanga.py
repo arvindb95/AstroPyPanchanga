@@ -270,7 +270,7 @@ def calc_pañcāṅga(
         location,
         date_str,
         nakṣatra_extent,
-        30,
+        rāśi_extent,
         ayanāṃśa,
         tithi,
         tithi_name,
@@ -289,10 +289,8 @@ def calc_pañcāṅga(
         test_date_utc_time,
         location,
         date_str,
-        nakṣatra_extent,
-        30,
+        rāśi_extent,
         ayanāṃśa,
-        tithi,
         tithi_name,
         vāra,
         nakṣatra,
@@ -307,7 +305,7 @@ def calc_pañcāṅga(
     return tithi_name, vāra, nakṣatra + pāda, karaṇa
 
 
-location = "Ayodhya, India"
-date_str = "2020-08-05 12:30:00"
+location = "Bengaluru, India"
+date_str = "1997-10-20 12:40:00"
 
 print(calc_pañcāṅga(location, date_str))
