@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from indic_transliteration import sanscript
+from indic_transliteration.sanscript import SchemeMap, SCHEMES, transliterate
 
 mpl.use("pgf")
 
@@ -28,6 +30,19 @@ mpl.rcParams.update(params)
 
 fig, ax = plt.subplots()
 
-ax.text(0.5, 0.5, r"\kan{ॐ }  ", fontsize=20)
+set_language = "kannada"
+
+text = "ॐ"
+
+print(text)
+
+final_text = transliterate(text, sanscript.DEVANAGARI, sanscript.KANNADA)
+
+ax.text(
+    0.5,
+    0.5,
+    r"\begin{%s} %s \end{%s}" % (set_language, final_text, set_language),
+    fontsize=20,
+)
 
 plt.savefig("test.pdf")
