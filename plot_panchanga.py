@@ -9,6 +9,8 @@ from astropy.time import Time
 import astropy.units as u
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from adjustText import adjust_text
+from indic_transliteration import sanscript
+from indic_transliteration.sanscript import SchemeMap, SCHEMES, transliterate
 
 #### Colors for grahas ####
 # Sun - Surya - Red - circle
@@ -240,7 +242,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
         dark_side_color = "darkgreen"
     elif graha == "shukra":
         bright_side_color = "white"
-        dark_side_color = "lightgrey"
+        dark_side_color = "grey"
     else:
         print(
             "That is not an inner graha! Use the outer graha function to plot ", graha
@@ -496,6 +498,33 @@ def plot_ketu(drawing_origin, scale, fig, ax):
     return 0
 
 
+def translit_str(some_str, language):
+    lang_dict = {"Devanagari": "sanskrit", "Kannada": "kannada"}
+    lang_translit_obj_dict = {
+        "Devanagari": sanscript.DEVANAGARI,
+        "Kannada": sanscript.KANNADA,
+    }
+    if language == "Devanagari":
+        translit = some_str
+    else:
+        translit = transliterate(
+            some_str,
+            lang_translit_obj_dict["Devanagari"],
+            lang_translit_obj_dict[language],
+        )
+
+    s = (
+        r"\begin{"
+        + lang_dict[language]
+        + r"}"
+        + translit
+        + r"\end{"
+        + lang_dict[language]
+        + r"}"
+    )
+    return s
+
+
 def make_circle_plot(
     test_date_utc_time,
     location,
@@ -515,6 +544,7 @@ def make_circle_plot(
     lagna_lambda,
     nakṣatra_names_file="nakshatra_names.tex",
     rāśi_names_file="rashi_names.tex",
+    graha_names_file="graha_names.tex",
     plotfile="panchanga_at_test_time.pdf",
 ):
     ## Sanskrit typesetting using XeLaTeX ##
@@ -699,113 +729,64 @@ def make_circle_plot(
     )
 
     ################ legend for grahas #####################
+    graha_legend_ax = fig.add_axes([1 - 0.15, 0.1, 0.1, 0.8], polar=False)
+    graha_legend_ax.axis("off")
+    graha_tab = Table.read(graha_names_file, format="latex")
 
-    inv = ax.transData.inverted()
+    graha_names = graha_tab["names"].data
 
-    xpos = 1100
-    ypos = 450
+    for graha_name_id in range(len(graha_names[:-1])):
+        graha_legend_ax.text(
+            0.5,
+            1 - (graha_name_id / 10) - 0.1,
+            graha_names[graha_name_id],
+            va="center",
+        )
 
-    sun_legend_pos = inv.transform((xpos, ypos))
-    sun_label_pos = inv.transform((xpos + 45, ypos - 5))
-    moon_legend_pos = inv.transform((xpos, ypos - 50))
-    moon_label_pos = inv.transform((xpos + 45, ypos - 55))
-    mercury_legend_pos = inv.transform((xpos, ypos - 100))
-    mercury_label_pos = inv.transform((xpos + 45, ypos - 105))
-    venus_legend_pos = inv.transform((xpos, ypos - 150))
-    venus_label_pos = inv.transform((xpos + 45, ypos - 155))
-    mars_legend_pos = inv.transform((xpos, ypos - 200))
-    mars_label_pos = inv.transform((xpos + 45, ypos - 205))
-    jupiter_legend_pos = inv.transform((xpos, ypos - 250))
-    jupiter_label_pos = inv.transform((xpos + 45, ypos - 255))
-    saturn_legend_pos = inv.transform((xpos, ypos - 300))
-    saturn_label_pos = inv.transform((xpos + 45, ypos - 305))
-    rahu_legend_pos = inv.transform((xpos, ypos - 350))
-    rahu_label_pos = inv.transform((xpos + 45, ypos - 355))
-    ketu_legend_pos = inv.transform((xpos, ypos - 400))
-    ketu_label_pos = inv.transform((xpos + 45, ypos - 405))
+    plot_sun((0.3, 0.9), 0.08, fig, graha_legend_ax)
+    plot_moon_phase(tithi, (0.3, 0.8), 0.08, fig, graha_legend_ax)
 
-    plot_sun(sun_legend_pos, 0.08, fig, ax)
-    plt.text(sun_label_pos[0], sun_label_pos[1], "\sam{सूर्यः } ")
-    plot_moon_phase(tithi, moon_legend_pos, 0.08, fig, ax)
-    plt.text(moon_label_pos[0], moon_label_pos[1], "\sam{चन्द्रः } ")
     plot_inner_graha_phase(
-        "budha", mercury_angle_to_sun, mercury_legend_pos, 0.05, fig, ax
+        "budha", mercury_angle_to_sun, (0.3, 0.7), 0.05, fig, graha_legend_ax
     )
-    plt.text(mercury_label_pos[0], mercury_label_pos[1], "\sam{बुधः } ")
     plot_inner_graha_phase(
-        "shukra", venus_angle_to_sun, venus_legend_pos, 0.05, fig, ax
+        "shukra", venus_angle_to_sun, (0.3, 0.6), 0.05, fig, graha_legend_ax
     )
-    plt.text(venus_label_pos[0], venus_label_pos[1], "\sam{शुक्रः } ")
-    plot_outer_graha("mangala", mars_legend_pos, 0.05, fig, ax)
-    plt.text(mars_label_pos[0], mars_label_pos[1], "\sam{मङ्गलः } ")
-    plot_outer_graha("guru", jupiter_legend_pos, 0.05, fig, ax)
-    plt.text(jupiter_label_pos[0], jupiter_label_pos[1], "\sam{बृहस्पतिः } ")
-    plot_outer_graha("shani", saturn_legend_pos, 0.05, fig, ax)
-    plt.text(saturn_label_pos[0], saturn_label_pos[1], "\sam{शनैश्चरः } ")
+    plot_outer_graha("mangala", (0.3, 0.5), 0.05, fig, graha_legend_ax)
+    plot_outer_graha("guru", (0.3, 0.4), 0.05, fig, graha_legend_ax)
+    plot_outer_graha("shani", (0.3, 0.3), 0.05, fig, graha_legend_ax)
 
-    plot_rahu(rahu_legend_pos, 5, fig, ax)
-    plt.text(rahu_label_pos[0], rahu_label_pos[1], "\sam{राहुः} ")
-    plot_ketu(ketu_legend_pos, 5, fig, ax)
-    plt.text(ketu_label_pos[0], ketu_label_pos[1], "\sam{केतुः} ")
+    plot_rahu((0.3, 0.2), 5, fig, graha_legend_ax)
+    plot_ketu((0.3, 0.1), 5, fig, graha_legend_ax)
 
     ################ legend for panchanga #####################
-    xpos_panch = -550
-    ypos_panch = 500
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch))[0],
-        inv.transform((xpos_panch, ypos_panch - 100))[1],
-        r"\sam{" + location + "}",
-    )
+    pañcāṅga_ax = fig.add_axes([0.05, 0.1, 0.18, 0.8], polar=False)
+    pañcāṅga_ax.axis("off")
 
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 30))[0],
-        inv.transform((xpos_panch, ypos_panch - 130))[1],
-        r"\sam{" + date_str.split(" ")[0] + "}",
-    )
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 60))[0],
-        inv.transform((xpos_panch, ypos_panch - 160))[1],
-        r"\sam{" + date_str.split(" ")[1] + "}",
-    )
+    pañcāṅga_ax.text(0.1, 0.8, r"\sam{" + location + r"}", va="center")
 
-    plt.text(
-        inv.transform((xpos_panch + 50, ypos_panch - 160))[0],
-        inv.transform((xpos_panch + 50, ypos_panch - 160))[1],
-        r"\sam{पञ्चाङ्ग }",
+    pañcāṅga_ax.text(0.1, 0.75, r"\sam{" + date_str.split(" ")[0] + r"}", va="center")
+
+    pañcāṅga_ax.text(0.1, 0.7, r"\sam{" + date_str.split(" ")[1] + r"}", va="center")
+    pañcāṅga_ax.text(
+        0.3,
+        0.5,
+        r"\sam{पञ्चाङ्गः }",
         bbox=dict(facecolor="none", edgecolor="white"),
+        ha="center",
+        va="center",
     )
 
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 220))[0],
-        inv.transform((xpos_panch, ypos_panch - 220))[1],
-        tithi_name,
-    )
+    pañcāṅga_ax.text(0.1, 0.4, tithi_name, va="center")
 
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 260))[0],
-        inv.transform((xpos_panch, ypos_panch - 260))[1],
-        vāra,
-    )
+    pañcāṅga_ax.text(0.1, 0.35, vāra, va="center")
 
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 300))[0],
-        inv.transform((xpos_panch, ypos_panch - 300))[1],
-        nakṣatra + r"\hspace{5pt}" + pāda,
-    )
+    pañcāṅga_ax.text(0.1, 0.3, nakṣatra + r"\hspace{5pt}" + pāda, va="center")
 
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 340))[0],
-        inv.transform((xpos_panch, ypos_panch - 340))[1],
-        yoga,
-    )
-    plt.text(
-        inv.transform((xpos_panch, ypos_panch - 380))[0],
-        inv.transform((xpos_panch, ypos_panch - 380))[1],
-        karaṇa,
-    )
-    # plt.text(inv.transform((-200, 220))[0], inv.transform((-200, 220))[1], final_yoga)
+    pañcāṅga_ax.text(0.1, 0.25, yoga, va="center")
+    pañcāṅga_ax.text(0.1, 0.2, karaṇa, va="center")
 
-    plt.title(r"\sam{ॐ }", fontsize=20)
+    ax.set_title(r"\sam{ॐ }", fontsize=20)
 
     # ---------------------------------------
 
@@ -836,6 +817,7 @@ def make_jatakam_plot(
     moon_lambda,
     sun_lambda,
     lagna_lambda,
+    language="Devanagari",
     rāśi_names_file="rashi_names.tex",
     plotfile="jatakam_at_test_time.pdf",
 ):
@@ -852,6 +834,8 @@ def make_jatakam_plot(
                \setotherlanguages{sanskrit}
                \newfontfamily\devanagarifont[Script=Devanagari]{Sanskrit 2003}
                \XeTeXgenerateactualtext 1
+               \setotherlanguage{kannada}
+               \newfontfamily\kannadafont[Script=Kannada]{Gubbi}
                \newcommand{\sam}[1]{\begin{sanskrit}#1\end{sanskrit}}"""
 
     params = {
@@ -861,13 +845,18 @@ def make_jatakam_plot(
         "pgf.texsystem": "xelatex",
         "pgf.preamble": preamble,
     }
+
     mpl.rcParams.update(params)
 
     fig, ax = plt.subplots()
     divider = make_axes_locatable(ax)
     pañcāṅga_ax = divider.append_axes("left", 0.5, sharey=ax)
 
-    fig.suptitle(r"\sam{{ॐ }}", color="b")
+    fig.suptitle(
+        translit_str(r" ॐ ", language),
+        color="b",
+    )
+
     ax.vlines([0, 2, 6, 8], ymin=0, ymax=8, color="b")
     ax.vlines([4, 4], ymin=[0, 6], ymax=[2, 8], color="b")
     ax.hlines([0, 2, 6, 8], xmin=0, xmax=8, color="b")
