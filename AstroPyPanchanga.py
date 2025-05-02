@@ -116,7 +116,7 @@ def cal_nakṣatra(moon_lambda, nakṣatra_names_file="nakshatra_names.tex"):
 
     final_pāda = int(pāda_remainder / pāda_extent) + 1
 
-    pāda_values = [r"\sam{१}", r"\sam{२}", r"\sam{३}", r"\sam{४}"]
+    pāda_values = ["१", "२", "३", "४"]
 
     final_pāda_text = pāda_values[final_pāda - 1]
 
@@ -282,6 +282,7 @@ def calc_pañcāṅga(
         moon_lambda,
         sun_lambda,
         rising_rāśi.geocentrictrueecliptic.lon.value,
+        language="Devanagari",
         plotfile=plotfilename,
     )
 
@@ -300,12 +301,13 @@ def calc_pañcāṅga(
         moon_lambda,
         sun_lambda,
         rising_rāśi.geocentrictrueecliptic.lon.value,
+        language="Devanagari",
     )
 
     return tithi_name, vāra, nakṣatra + pāda, karaṇa
 
 
-location = "Bengaluru, India"
-date_str = "1997-10-20 12:40:00"
+location = "Ayodhya, India"
+date_str = "2020-08-05 12:00:00"
 
 print(calc_pañcāṅga(location, date_str))

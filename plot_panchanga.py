@@ -499,10 +499,17 @@ def plot_ketu(drawing_origin, scale, fig, ax):
 
 
 def translit_str(some_str, language):
-    lang_dict = {"Devanagari": "sanskrit", "Kannada": "kannada"}
+    lang_dict = {
+        "Devanagari": "sanskrit",
+        "Kannada": "kannada",
+        "Telugu": "telugu",
+        "Tamil": "tamil",
+    }
     lang_translit_obj_dict = {
         "Devanagari": sanscript.DEVANAGARI,
         "Kannada": sanscript.KANNADA,
+        "Telugu": sanscript.TELUGU,
+        "Tamil": sanscript.TAMIL,
     }
     if language == "Devanagari":
         translit = some_str
@@ -525,6 +532,25 @@ def translit_str(some_str, language):
     return s
 
 
+## TeX preamble ##
+preamble = r"""\usepackage{fontspec}
+           \usepackage{polyglossia}
+           \usepackage[T1]{fontenc}
+           \usepackage{tikz}
+           \usepackage{tgpagella}
+           \setmainlanguage{english}
+           \setotherlanguages{sanskrit}
+           \newfontfamily\devanagarifont[Script=Devanagari]{Sanskrit 2003}
+           \setotherlanguage{kannada}
+           \newfontfamily\kannadafont[Script=Kannada]{Noto Serif Kannada}
+           \setotherlanguage{telugu}
+           \newfontfamily\telugufont[Script=Telugu]{Noto Serif Telugu}
+           \setotherlanguage{tamil}
+           \newfontfamily\tamilfont[Script=Tamil]{Noto Serif Tamil}              
+           \XeTeXgenerateactualtext 1
+           """
+
+
 def make_circle_plot(
     test_date_utc_time,
     location,
@@ -542,6 +568,7 @@ def make_circle_plot(
     moon_lambda,
     sun_lambda,
     lagna_lambda,
+    language="Devanagari",
     nakṣatra_names_file="nakshatra_names.tex",
     rāśi_names_file="rashi_names.tex",
     graha_names_file="graha_names.tex",
@@ -550,17 +577,6 @@ def make_circle_plot(
     ## Sanskrit typesetting using XeLaTeX ##
     mpl.use("pgf")
 
-    ## TeX preamble ##
-    preamble = r"""\usepackage{fontspec}
-               \usepackage{polyglossia}
-               \usepackage[T1]{fontenc}
-               \usepackage{tikz}
-               \setmainlanguage{english}
-               \setotherlanguages{sanskrit}
-               \newfontfamily\devanagarifont[Script=Devanagari]{Sanskrit 2003}
-               \XeTeXgenerateactualtext 1
-               \newcommand{\sam}[1]{\begin{sanskrit}#1\end{sanskrit}}"""
-
     params = {
         "font.family": "serif",
         "text.usetex": True,
@@ -568,7 +584,12 @@ def make_circle_plot(
         "pgf.texsystem": "xelatex",
         "pgf.preamble": preamble,
     }
+
     mpl.rcParams.update(params)
+
+    if language == "Tamil":
+        tamil_font_size_param = {"font.size": 6}
+        mpl.rcParams.update(tamil_font_size_param)
 
     plt.style.use("dark_background")
 
@@ -610,7 +631,7 @@ def make_circle_plot(
         ax.text(
             np.deg2rad(nakṣatra_centers[i]),
             1.5,
-            nakṣatra_names[i],
+            translit_str(nakṣatra_names[i], language),
             rotation=rotation_val,
             alpha=alpha_val,
             color=color_val,
@@ -642,7 +663,7 @@ def make_circle_plot(
         ax.text(
             np.deg2rad(rāśi_centers[i]),
             0.65,
-            rāśi_names[i],
+            translit_str(rāśi_names[i], language),
             rotation=rotation_val,
             alpha=alpha_val,
             color=color_val,
@@ -721,7 +742,7 @@ def make_circle_plot(
     ax.text(
         np.deg2rad(lagna_lambda),
         0.9,
-        r"\sam{लग्न}",
+        translit_str("लग्न", language),
         color="yellow",
         rotation=lagna_lambda + 90,
         ha="center",
@@ -739,7 +760,7 @@ def make_circle_plot(
         graha_legend_ax.text(
             0.5,
             1 - (graha_name_id / 10) - 0.1,
-            graha_names[graha_name_id],
+            translit_str(graha_names[graha_name_id], language),
             va="center",
         )
 
@@ -763,30 +784,42 @@ def make_circle_plot(
     pañcāṅga_ax = fig.add_axes([0.05, 0.1, 0.18, 0.8], polar=False)
     pañcāṅga_ax.axis("off")
 
-    pañcāṅga_ax.text(0.1, 0.8, r"\sam{" + location + r"}", va="center")
+    pañcāṅga_ax.text(
+        0.1,
+        0.8,
+        location,
+        va="center",
+    )
 
-    pañcāṅga_ax.text(0.1, 0.75, r"\sam{" + date_str.split(" ")[0] + r"}", va="center")
+    pañcāṅga_ax.text(0.1, 0.75, date_str.split(" ")[0], va="center")
 
-    pañcāṅga_ax.text(0.1, 0.7, r"\sam{" + date_str.split(" ")[1] + r"}", va="center")
+    pañcāṅga_ax.text(0.1, 0.7, date_str.split(" ")[1], va="center")
     pañcāṅga_ax.text(
         0.3,
         0.5,
-        r"\sam{पञ्चाङ्गः }",
+        translit_str("पञ्चाङ्गः ", language),
         bbox=dict(facecolor="none", edgecolor="white"),
         ha="center",
         va="center",
     )
 
-    pañcāṅga_ax.text(0.1, 0.4, tithi_name, va="center")
+    pañcāṅga_ax.text(0.1, 0.4, translit_str(tithi_name, language), va="center")
 
-    pañcāṅga_ax.text(0.1, 0.35, vāra, va="center")
+    pañcāṅga_ax.text(0.1, 0.35, translit_str(vāra, language), va="center")
 
-    pañcāṅga_ax.text(0.1, 0.3, nakṣatra + r"\hspace{5pt}" + pāda, va="center")
+    pañcāṅga_ax.text(
+        0.1,
+        0.3,
+        translit_str(nakṣatra, language)
+        + r"\hspace{5pt}"
+        + translit_str(pāda, language),
+        va="center",
+    )
 
-    pañcāṅga_ax.text(0.1, 0.25, yoga, va="center")
-    pañcāṅga_ax.text(0.1, 0.2, karaṇa, va="center")
+    pañcāṅga_ax.text(0.1, 0.25, translit_str(yoga, language), va="center")
+    pañcāṅga_ax.text(0.1, 0.2, translit_str(karaṇa, language), va="center")
 
-    ax.set_title(r"\sam{ॐ }", fontsize=20)
+    ax.set_title(translit_str("ॐ ", language), fontsize=20)
 
     # ---------------------------------------
 
@@ -825,19 +858,6 @@ def make_jatakam_plot(
     ## Sanskrit typesetting using XeLaTeX ##
     mpl.use("pgf")
 
-    ## TeX preamble ##
-    preamble = r"""\usepackage{fontspec}
-               \usepackage{polyglossia}
-               \usepackage[T1]{fontenc}
-               \usepackage{tikz}
-               \setmainlanguage{english}
-               \setotherlanguages{sanskrit}
-               \newfontfamily\devanagarifont[Script=Devanagari]{Sanskrit 2003}
-               \XeTeXgenerateactualtext 1
-               \setotherlanguage{kannada}
-               \newfontfamily\kannadafont[Script=Kannada]{Gubbi}
-               \newcommand{\sam}[1]{\begin{sanskrit}#1\end{sanskrit}}"""
-
     params = {
         "font.family": "serif",
         "text.usetex": True,
@@ -847,6 +867,10 @@ def make_jatakam_plot(
     }
 
     mpl.rcParams.update(params)
+
+    if language == "Tamil":
+        tamil_font_size_param = {"font.size": 6}
+        mpl.rcParams.update(tamil_font_size_param)
 
     fig, ax = plt.subplots()
     divider = make_axes_locatable(ax)
@@ -939,7 +963,7 @@ def make_jatakam_plot(
         t = ax.text(
             coord_for_rāśi[sel_rāśi_id][0],
             coord_for_rāśi[sel_rāśi_id][1],
-            graha_names[graha_id],
+            translit_str(graha_names[graha_id], language),
             color="b",
             ha="center",
             # va="center",
@@ -952,7 +976,7 @@ def make_jatakam_plot(
     pañcāṅga_ax.text(
         0.2,
         7.5,
-        r"\sam{" + location + "}",
+        location,
         color="b",
         va="center",
     )
@@ -960,7 +984,7 @@ def make_jatakam_plot(
     pañcāṅga_ax.text(
         0.2,
         7.0,
-        r"\sam{" + date_str.split(" ")[0] + "}",
+        date_str.split(" ")[0],
         color="b",
         va="center",
     )
@@ -968,7 +992,7 @@ def make_jatakam_plot(
     pañcāṅga_ax.text(
         0.2,
         6.5,
-        r"\sam{" + date_str.split(" ")[1] + "}",
+        date_str.split(" ")[1],
         color="b",
         va="center",
     )
@@ -976,7 +1000,7 @@ def make_jatakam_plot(
     pañcāṅga_ax.text(
         1,
         4.0,
-        r"\sam{पञ्चाङ्ग }",
+        translit_str("पञ्चाङ्ः", language),
         bbox=dict(facecolor="none", edgecolor="b"),
         color="b",
         va="center",
@@ -986,7 +1010,7 @@ def make_jatakam_plot(
     pañcāṅga_ax.text(
         0.2,
         2.5,
-        tithi_name,
+        translit_str(tithi_name, language),
         color="b",
         va="center",
     )
@@ -994,7 +1018,7 @@ def make_jatakam_plot(
     pañcāṅga_ax.text(
         0.2,
         2.0,
-        vāra,
+        translit_str(vāra, language),
         color="b",
         va="center",
     )
@@ -1002,7 +1026,9 @@ def make_jatakam_plot(
     pañcāṅga_ax.text(
         0.2,
         1.5,
-        nakṣatra + r"\hspace{5pt}" + pāda,
+        translit_str(nakṣatra, language)
+        + r"\hspace{5pt}"
+        + translit_str(pāda, language),
         color="b",
         va="center",
     )
@@ -1010,14 +1036,14 @@ def make_jatakam_plot(
     pañcāṅga_ax.text(
         0.2,
         1.0,
-        yoga,
+        translit_str(yoga, language),
         color="b",
         va="center",
     )
     pañcāṅga_ax.text(
         0.2,
         0.5,
-        karaṇa,
+        translit_str(karaṇa, language),
         color="b",
         va="center",
     )
