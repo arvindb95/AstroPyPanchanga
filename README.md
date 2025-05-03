@@ -27,8 +27,7 @@ The code by default prints all information in _Devanāgarī_. But it supports tr
 - The file `requirements.txt` lists the python dependencies that are required to run this code.
    
 ### External Requirements
-- [XeTeX](https://tug.org/xetex/) - For rendering _devan&#x101;gari_ words.  
-- [Shobhika](https://ctan.org/tex-archive/fonts/shobhika?lang=en) - A well typeset font which includes many special characters
+- [XeTeX](https://tug.org/xetex/) - For rendering information in indian languages.  
 - Noto serif fonts for all the above supported languages
 
 _Edit the LaTeX preamble as you wish to change the typesetting (you might need to change the files that have the names of naks&#803;atras etc.)_

@@ -501,15 +501,19 @@ def plot_ketu(drawing_origin, scale, fig, ax):
 def translit_str(some_str, language):
     lang_dict = {
         "Devanagari": "sanskrit",
+        "Grantha": "grantha",
         "Kannada": "kannada",
-        "Telugu": "telugu",
+        "Malayalam": "malayalam",
         "Tamil": "tamil",
+        "Telugu": "telugu",
     }
     lang_translit_obj_dict = {
         "Devanagari": sanscript.DEVANAGARI,
+        "Grantha": sanscript.GRANTHA,
         "Kannada": sanscript.KANNADA,
-        "Telugu": sanscript.TELUGU,
+        "Malayalam": sanscript.MALAYALAM,
         "Tamil": sanscript.TAMIL,
+        "Telugu": sanscript.TELUGU,
     }
     if language == "Devanagari":
         translit = some_str
@@ -540,13 +544,17 @@ preamble = r"""\usepackage{fontspec}
            \usepackage{tgpagella}
            \setmainlanguage{english}
            \setotherlanguages{sanskrit}
-           \newfontfamily\devanagarifont[Script=Devanagari]{Sanskrit 2003}
+           \newfontfamily\devanagarifont[Script=Devanagari]{Noto Serif Devanagari}
+           \setotherlanguage{grantha}
+           \newfontfamily\granthafont[Script=Grantha]{Noto Serif Grantha}
            \setotherlanguage{kannada}
            \newfontfamily\kannadafont[Script=Kannada]{Noto Serif Kannada}
-           \setotherlanguage{telugu}
-           \newfontfamily\telugufont[Script=Telugu]{Noto Serif Telugu}
+           \setotherlanguage{malayalam}
+           \newfontfamily\malayalamfont[Script=Tamil]{Noto Serif Malayalam}
            \setotherlanguage{tamil}
-           \newfontfamily\tamilfont[Script=Tamil]{Noto Serif Tamil}              
+           \newfontfamily\tamilfont[Script=Tamil]{Noto Serif Tamil}
+           \setotherlanguage{telugu}
+           \newfontfamily\telugufont[Script=Telugu]{Noto Serif Telugu} 
            \XeTeXgenerateactualtext 1
            """
 
@@ -587,7 +595,7 @@ def make_circle_plot(
 
     mpl.rcParams.update(params)
 
-    if language == "Tamil":
+    if language in ["Tamil", "Grantha", "Malayalam"]:
         tamil_font_size_param = {"font.size": 6}
         mpl.rcParams.update(tamil_font_size_param)
 
@@ -868,7 +876,7 @@ def make_jatakam_plot(
 
     mpl.rcParams.update(params)
 
-    if language == "Tamil":
+    if language in ["Tamil", "Grantha", "Malayalam"]:
         tamil_font_size_param = {"font.size": 6}
         mpl.rcParams.update(tamil_font_size_param)
 
