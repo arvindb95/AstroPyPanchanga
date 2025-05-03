@@ -10,7 +10,7 @@ The included `plot_panchanga.py` script allows to visualise the positions of the
 
 The code also can calculate the _jātakaṃ_ (in the south indian traditional format) at the given time. Use the `make_jatakam_plot` function for this :
 <p align="center">
-<img src="https://github.com/arvindb95/AstroPyPanchanga/blob/main/jatakam_at_test_time.pdf-1.jpg" title="Sample jatakam plot"  width="50%"/>
+<img src="https://github.com/arvindb95/AstroPyPanchanga/blob/main/jatakam_at_test_time-1.jpg" title="Sample jatakam plot"  width="50%"/>
 </p>
 
 The code by default prints all information in _Devanāgarī_. But it supports transliteration to the following indian languages using the [indic_transliteration](https://github.com/indic-transliteration/indic_transliteration_py) package :
