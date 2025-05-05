@@ -35,3 +35,4 @@ _Edit the LaTeX preamble as you wish to change the typesetting (you might need t
 ## To do
 - Better comments on code for readability 
 - Calculate _pañcāṅga_ for the whole day to get extent of each _aṅga_ and when it changes 
+- *rāhu and ketu positions are wrong and they need to be corrected*

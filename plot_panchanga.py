@@ -12,6 +12,7 @@ from adjustText import adjust_text
 from indic_transliteration import sanscript
 from indic_transliteration.sanscript import SchemeMap, SCHEMES, transliterate
 
+
 #### Colors for grahas ####
 # Sun - Surya - Red - circle
 # Moon - Chandra - White - semicircle
@@ -31,23 +32,31 @@ def calc_rahu_ketu_pos(
 
     if test_date_utc_time.jd > known_eclipse_time.jd:
         time_diff = ((test_date_utc_time - known_eclipse_time).value * u.d).to(u.year)
+        print(time_diff)
         ketu_degrees_moved = (ketu_speed * time_diff.value) % 360
-        ketu_lambda = moon_lambda_known_eclipse - ketu_degrees_moved
+        print(ketu_degrees_moved)
+        print(moon_lambda_known_eclipse)
+        ketu_lambda = moon_lambda_known_eclipse + ketu_degrees_moved
+        print(ketu_lambda)
         if ketu_lambda < 0:
-            ketu_lambda = 360 - ketu_lambda
+            ketu_lambda = 360 + ketu_lambda
+
     else:
         time_diff = ((known_eclipse_time - test_date_utc_time).value * u.d).to(u.year)
         ketu_degrees_moved = (ketu_speed * time_diff.value) % 360
         ketu_lambda = moon_lambda_known_eclipse + ketu_degrees_moved
         if ketu_degrees_moved > 360:
-            ketu_lambda = 360 - ketu_lambda
+            ketu_lambda = ketu_lambda - 360
 
     if ketu_lambda < 180:
         rahu_lambda = 180 + ketu_lambda
     else:
         rahu_lambda = (180 + ketu_lambda) - 360
 
-    return rahu_lambda, ketu_lambda
+    print(ketu_lambda)
+    print(rahu_lambda)
+
+    return rahu_lambda % 360, ketu_lambda % 360
 
 
 def plot_moon_phase(day, drawing_origin, radius, fig, ax):
@@ -731,7 +740,7 @@ def make_circle_plot(
     ##  rahu and ketu  ##
 
     # This eclipse happens when moon was in Rahu's postion
-    known_eclipse_time = Time("2023-04-20 04:16:49", format="iso", scale="utc")
+    known_eclipse_time = Time("2025-03-14 06:58:00", format="iso", scale="utc")
 
     moon_lambda_known_eclipse = get_body(
         "moon", known_eclipse_time, location=observing_location
@@ -740,7 +749,7 @@ def make_circle_plot(
         known_eclipse_time, test_date_utc_time, moon_lambda_known_eclipse
     )
 
-    rahu_lambda, ketu_lambda = ketu_lambda, rahu_lambda
+    rahu_lambda, ketu_lambda = rahu_lambda, ketu_lambda
 
     plot_rahu([np.deg2rad(rahu_lambda), 1.9], 5, fig, ax)
     plot_ketu([np.deg2rad(ketu_lambda), 1.9], 5, fig, ax)
@@ -793,17 +802,17 @@ def make_circle_plot(
     pañcāṅga_ax.axis("off")
 
     pañcāṅga_ax.text(
-        0.1,
+        0.0,
         0.8,
         location,
         va="center",
     )
 
-    pañcāṅga_ax.text(0.1, 0.75, date_str.split(" ")[0], va="center")
+    pañcāṅga_ax.text(0.0, 0.75, date_str.split(" ")[0], va="center")
 
-    pañcāṅga_ax.text(0.1, 0.7, date_str.split(" ")[1], va="center")
+    pañcāṅga_ax.text(0.0, 0.7, date_str.split(" ")[1], va="center")
     pañcāṅga_ax.text(
-        0.3,
+        0.2,
         0.5,
         translit_str("पञ्चाङ्गः ", language),
         bbox=dict(facecolor="none", edgecolor="white"),
@@ -811,12 +820,12 @@ def make_circle_plot(
         va="center",
     )
 
-    pañcāṅga_ax.text(0.1, 0.4, translit_str(tithi_name, language), va="center")
+    pañcāṅga_ax.text(0.0, 0.4, translit_str(tithi_name, language), va="center")
 
-    pañcāṅga_ax.text(0.1, 0.35, translit_str(vāra, language), va="center")
+    pañcāṅga_ax.text(0.0, 0.35, translit_str(vāra, language), va="center")
 
     pañcāṅga_ax.text(
-        0.1,
+        0.0,
         0.3,
         translit_str(nakṣatra, language)
         + r"\hspace{5pt}"
@@ -824,8 +833,8 @@ def make_circle_plot(
         va="center",
     )
 
-    pañcāṅga_ax.text(0.1, 0.25, translit_str(yoga, language), va="center")
-    pañcāṅga_ax.text(0.1, 0.2, translit_str(karaṇa, language), va="center")
+    pañcāṅga_ax.text(0.0, 0.25, translit_str(yoga, language), va="center")
+    pañcāṅga_ax.text(0.0, 0.2, translit_str(karaṇa, language), va="center")
 
     ax.set_title(translit_str("ॐ ", language), fontsize=20)
 
@@ -934,8 +943,8 @@ def make_jatakam_plot(
 
     ##  rahu and ketu  ##
 
-    # This eclipse happens when moon was in Rahu's postion
-    known_eclipse_time = Time("2023-04-20 04:16:49", format="iso", scale="utc")
+    # This eclipse happens when moon was in Ketu's postion
+    known_eclipse_time = Time("2025-03-14 06:58:00", format="iso", scale="utc")
 
     moon_lambda_known_eclipse = get_body(
         "moon", known_eclipse_time, location=observing_location
@@ -944,7 +953,7 @@ def make_jatakam_plot(
         known_eclipse_time, test_date_utc_time, moon_lambda_known_eclipse
     )
 
-    rahu_lambda, ketu_lambda = ketu_lambda, rahu_lambda
+    rahu_lambda, ketu_lambda = rahu_lambda, ketu_lambda
 
     lst_of_grahas_pos = [
         sun_lambda,
