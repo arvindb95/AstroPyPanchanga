@@ -11,7 +11,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from adjustText import adjust_text
 from indic_transliteration import sanscript
 from indic_transliteration.sanscript import SchemeMap, SCHEMES, transliterate
-
+from astroquery.jplhorizons import Horizons
 
 #### Colors for grahas ####
 # Sun - Surya - Red - circle
@@ -28,35 +28,39 @@ from indic_transliteration.sanscript import SchemeMap, SCHEMES, transliterate
 def calc_rahu_ketu_pos(
     known_eclipse_time, test_date_utc_time, moon_lambda_known_eclipse
 ):
-    ketu_speed = 360 / 18.612958  # deg per year
+    ketu_speed = 360 / 18.031028975587496  # deg per year
 
     if test_date_utc_time.jd > known_eclipse_time.jd:
-        time_diff = ((test_date_utc_time - known_eclipse_time).value * u.d).to(u.year)
-        print(time_diff)
+        time_diff = (
+            (
+                test_date_utc_time
+                - Time("2000-01-01T00:00", format="isot", scale="utc")
+            ).value
+            * u.d
+        ).to(u.year)
         ketu_degrees_moved = (ketu_speed * time_diff.value) % 360
-        print(ketu_degrees_moved)
-        print(moon_lambda_known_eclipse)
-        ketu_lambda = moon_lambda_known_eclipse + ketu_degrees_moved
-        print(ketu_lambda)
+        ketu_lambda = 281.2166666666667 - ketu_degrees_moved
         if ketu_lambda < 0:
             ketu_lambda = 360 + ketu_lambda
 
     else:
         time_diff = ((known_eclipse_time - test_date_utc_time).value * u.d).to(u.year)
         ketu_degrees_moved = (ketu_speed * time_diff.value) % 360
-        ketu_lambda = moon_lambda_known_eclipse + ketu_degrees_moved
+        ketu_lambda = moon_lambda_known_eclipse - ketu_degrees_moved
         if ketu_degrees_moved > 360:
             ketu_lambda = ketu_lambda - 360
+
+    obj = Horizons(id="301", epochs=test_date_utc_time.jd, location="@0")
+    el = obj.elements()
+
+    ketu_lambda = el["Omega"][0]
 
     if ketu_lambda < 180:
         rahu_lambda = 180 + ketu_lambda
     else:
         rahu_lambda = (180 + ketu_lambda) - 360
 
-    print(ketu_lambda)
-    print(rahu_lambda)
-
-    return rahu_lambda % 360, ketu_lambda % 360
+    return rahu_lambda, ketu_lambda
 
 
 def plot_moon_phase(day, drawing_origin, radius, fig, ax):
@@ -740,13 +744,15 @@ def make_circle_plot(
     ##  rahu and ketu  ##
 
     # This eclipse happens when moon was in Rahu's postion
-    known_eclipse_time = Time("2025-03-14 06:58:00", format="iso", scale="utc")
+    known_eclipse_time = Time("2022-11-08 10:59:00", format="iso", scale="utc")
 
     moon_lambda_known_eclipse = get_body(
         "moon", known_eclipse_time, location=observing_location
     ).geocentrictrueecliptic.lon.value
     rahu_lambda, ketu_lambda = calc_rahu_ketu_pos(
-        known_eclipse_time, test_date_utc_time, moon_lambda_known_eclipse
+        known_eclipse_time,
+        test_date_utc_time,
+        moon_lambda_known_eclipse,
     )
 
     rahu_lambda, ketu_lambda = rahu_lambda, ketu_lambda
@@ -950,7 +956,9 @@ def make_jatakam_plot(
         "moon", known_eclipse_time, location=observing_location
     ).geocentrictrueecliptic.lon.value
     rahu_lambda, ketu_lambda = calc_rahu_ketu_pos(
-        known_eclipse_time, test_date_utc_time, moon_lambda_known_eclipse
+        known_eclipse_time,
+        test_date_utc_time,
+        moon_lambda_known_eclipse,
     )
 
     rahu_lambda, ketu_lambda = rahu_lambda, ketu_lambda
