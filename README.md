@@ -29,7 +29,7 @@ The code by default prints all information in _Devanāgarī_. But it supports tr
 ### External Requirements
 - [XeTeX](https://tug.org/xetex/) - For rendering information in indian languages.  
 - Noto serif fonts for all the above supported languages
-- Sanskrit 2003 font for devanāgarī
+- Sanskrit 2003 font for _Devanāgarī_
 
 _Edit the LaTeX preamble as you wish to change the typesetting (you might need to change the files that have the names of naks&#803;atras etc.)_
 
