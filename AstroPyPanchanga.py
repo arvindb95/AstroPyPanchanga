@@ -308,6 +308,6 @@ def calc_pañcāṅga(
 
 
 location = "Kanchipuram, India"
-date_str = "2026-04-30 06:00:00"
+date_str = "2025-04-30 06:00:00"
 
 print(calc_pañcāṅga(location, date_str))
