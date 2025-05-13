@@ -20,6 +20,19 @@ The code by default prints all information in _Devanāgarī_. But it supports tr
 - Tamil
 - Telugu
 
+## Usage
+The main script that takes in the inputs for time and location is `PyPanchanga.py`. Navigate to the end of this script and modify the following lines
+
+```python
+
+location = "Kanchipuram, India" # Location as a string. The address can be more detailed. Uses OpenStreetMap Nominatim tool [1] (default) or the Google geocoding API [2]
+date_str = "2025-04-30 06:00:00" # Date to calculate 
+language = "Devanagari" # Currently allowed options are  ["Devanagari", "Grantha", "Kannada", "Malayalam", "Tamil", "Telugu"]
+
+# Print the panchanga in the command line and save the plots requested
+print(calc_pañcāṅga(location, date_str, language=language))
+
+```
 
 ## Dependancies
 
