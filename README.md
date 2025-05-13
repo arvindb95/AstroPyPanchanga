@@ -1,5 +1,5 @@
-# AstroPyPanchanga
-Calculate _pañcāṅga_ at given time and location using [astropy](https://www.astropy.org/). 
+# PyPanchanga
+Calculate _pañcāṅga_ at given time and location using Python. The main packages used for getting planetary ephemerides are [Astropy](https://www.astropy.org/) and [Skyfield](https://rhodesmill.org/skyfield/).  
 
 This set of codes also calucates _tithi_, _vāra_, _nakṣatra_, _yoga_ and _karaṇa_ that make up the _pañcāṅga_.
 
