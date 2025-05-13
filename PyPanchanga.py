@@ -193,6 +193,7 @@ def calc_pañcāṅga(
     time,
     time_format="%Y-%m-%d %H:%M:%S",
     plotfilename="panchanga_at_test_time.pdf",
+    language="Devanagari",
 ):
     """
     Calculates nakshatra and tithi at input time and makes plot of grahas
@@ -282,8 +283,8 @@ def calc_pañcāṅga(
         moon_lambda,
         sun_lambda,
         rising_rāśi.geocentrictrueecliptic.lon.value,
-        language="Devanagari",
         plotfile=plotfilename,
+        language=language,
     )
 
     make_jatakam_plot(
@@ -301,7 +302,7 @@ def calc_pañcāṅga(
         moon_lambda,
         sun_lambda,
         rising_rāśi.geocentrictrueecliptic.lon.value,
-        language="Devanagari",
+        language=language,
     )
 
     return tithi_name, vāra, nakṣatra + pāda, karaṇa
@@ -309,5 +310,6 @@ def calc_pañcāṅga(
 
 location = "Kanchipuram, India"
 date_str = "2025-04-30 06:00:00"
+language = "Devanagari"
 
-print(calc_pañcāṅga(location, date_str))
+print(calc_pañcāṅga(location, date_str, language=language))
