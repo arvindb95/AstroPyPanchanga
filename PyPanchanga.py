@@ -305,6 +305,18 @@ def calc_pañcāṅga(
         language=language,
     )
 
+    make_sky_plot(
+        test_date_utc_time,
+        location,
+        date_str,
+        nakṣatra_extent,
+        rāśi_extent,
+        ayanāṃśa,
+        tithi,
+        tithi_name,
+        language=language,
+    )
+
     return tithi_name, vāra, nakṣatra + pāda, karaṇa
 
 

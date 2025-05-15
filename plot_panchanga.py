@@ -3,14 +3,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.transforms as transforms
 import matplotlib as mpl
-from astropy.coordinates import Angle, get_body, EarthLocation
+from astropy import coordinates as coor
+from astropy.coordinates import get_body, EarthLocation, SkyCoord
 from astropy.table import Table
 from astropy.time import Time
 import astropy.units as u
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from adjustText import adjust_text
 from indic_transliteration import sanscript
-from indic_transliteration.sanscript import SchemeMap, SCHEMES, transliterate
+from indic_transliteration.sanscript import transliterate
 from skyfield import almanac
 from skyfield.api import load
 
@@ -214,7 +215,13 @@ def plot_sun(drawing_origin, radius, fig, ax):
     )
 
     circle = mpatches.Circle(
-        center, radius, ec="orange", fc="yellow", transform=trans, clip_on=False
+        center,
+        radius,
+        ec="orange",
+        fc="yellow",
+        transform=trans,
+        clip_on=False,
+        zorder=10,
     )
     ax.add_patch(circle)
 
@@ -230,6 +237,7 @@ def plot_sun(drawing_origin, radius, fig, ax):
             transform=trans,
             clip_on=False,
             linewidth=0.5,
+            zorder=10,
         )
         ax.add_patch(triangle)
 
@@ -263,6 +271,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             lw=0.5,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         ellipse = mpatches.Ellipse(
             center,
@@ -272,6 +281,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             ec=None,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         wedge = mpatches.Wedge(
             center,
@@ -282,6 +292,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             ec=None,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         ax.add_patch(circle)
         ax.add_patch(wedge)
@@ -296,6 +307,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             lw=0.5,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         ellipse = mpatches.Ellipse(
             center,
@@ -305,6 +317,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             ec=None,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         wedge = mpatches.Wedge(
             center,
@@ -315,6 +328,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             ec=None,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         ax.add_patch(circle)
         ax.add_patch(wedge)
@@ -329,6 +343,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             lw=0.5,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         ellipse = mpatches.Ellipse(
             center,
@@ -340,6 +355,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             ec=None,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         wedge = mpatches.Wedge(
             center,
@@ -350,6 +366,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             ec=None,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         ax.add_patch(circle)
         ax.add_patch(wedge)
@@ -364,6 +381,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             lw=0.5,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         ellipse = mpatches.Ellipse(
             center,
@@ -375,6 +393,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             ec=None,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         wedge = mpatches.Wedge(
             center,
@@ -385,6 +404,7 @@ def plot_inner_graha_phase(graha, angle_to_sun, drawing_origin, radius, fig, ax)
             ec=None,
             transform=trans,
             clip_on=False,
+            zorder=10,
         )
         ax.add_patch(circle)
         ax.add_patch(wedge)
@@ -735,12 +755,6 @@ def make_circle_plot(
 
     ##  rahu and ketu  ##
 
-    # This eclipse happens when moon was in Rahu's postion
-    known_eclipse_time = Time("2022-11-08 10:59:00", format="iso", scale="utc")
-
-    moon_lambda_known_eclipse = get_body(
-        "moon", known_eclipse_time, location=observing_location
-    ).geocentrictrueecliptic.lon.value
     rahu_lambda, ketu_lambda = calc_rahu_ketu_pos(
         test_date_utc_time, observing_location
     )
@@ -939,12 +953,6 @@ def make_jatakam_plot(
 
     ##  rahu and ketu  ##
 
-    # This eclipse happens when moon was in Ketu's postion
-    known_eclipse_time = Time("2025-03-14 06:58:00", format="iso", scale="utc")
-
-    moon_lambda_known_eclipse = get_body(
-        "moon", known_eclipse_time, location=observing_location
-    ).geocentrictrueecliptic.lon.value
     rahu_lambda, ketu_lambda = calc_rahu_ketu_pos(
         test_date_utc_time, observing_location
     )
@@ -1068,3 +1076,441 @@ def make_jatakam_plot(
     plt.savefig(plotfile, bbox_inches="tight")
 
     return 0
+
+
+def make_sky_plot(
+    test_date_utc_time,
+    location,
+    date_str,
+    nakṣatra_extent,
+    rāśi_extent,
+    ayanāṃśa,
+    tithi,
+    tithi_name,
+    language,
+    nakṣatra_names_file="nakshatra_names.tex",
+    rāśi_names_file="rashi_names.tex",
+):
+    ## Sanskrit typesetting using XeLaTeX ##
+    mpl.use("pgf")
+
+    params = {
+        "font.family": "serif",
+        "text.usetex": True,
+        "pgf.rcfonts": False,
+        "pgf.texsystem": "xelatex",
+        "pgf.preamble": preamble,
+    }
+
+    mpl.rcParams.update(params)
+
+    if language in ["Tamil", "Grantha", "Malayalam"]:
+        tamil_font_size_param = {"font.size": 6}
+        mpl.rcParams.update(tamil_font_size_param)
+
+    plt.style.use("dark_background")
+
+    observing_location = EarthLocation.of_address(location)
+
+    fig = plt.figure(facecolor="midnightblue", figsize=(12, 5))
+
+    fig.suptitle(
+        translit_str(r" ॐ ", language),
+    )
+    ax_above = fig.add_subplot(121, projection="polar")
+    ax_above.set_facecolor("midnightblue")
+    ax_above.set_theta_zero_location("N")
+    ax_above.set_theta_direction(-1)
+    ax_above.grid(True, which="major", linestyle="dotted")
+
+    degree_sign = r"$^{\circ}$"
+
+    # For positively-increasing range (e.g., range(1, 90, 15)),
+    # labels go from middle to outside.
+    r_labels = [
+        "90" + degree_sign,
+        "",
+        "60" + degree_sign,
+        "",
+        "30" + degree_sign,
+        "",
+        "0" + degree_sign + " Alt.",
+    ]
+
+    theta_labels = []
+    for chunk in range(0, 7):
+        label_angle = (0.0 * u.deg * (1 / u.deg)) + (chunk * 45.0)
+        while label_angle >= 360.0:
+            label_angle -= 360.0
+        if chunk == 0:
+            theta_labels.append("N " + "\n" + str(label_angle) + degree_sign + " Az")
+        elif chunk == 2:
+            theta_labels.append("E" + "\n" + str(label_angle) + degree_sign)
+        elif chunk == 4:
+            theta_labels.append("S" + "\n" + str(label_angle) + degree_sign)
+        elif chunk == 6:
+            theta_labels.append("W" + "\n" + str(label_angle) + degree_sign)
+        else:
+            theta_labels.append(str(label_angle) + degree_sign)
+    theta_labels.append("")
+
+    ax_below = fig.add_subplot(122, projection="polar")
+    ax_below.set_facecolor("black")
+    ax_below.set_theta_zero_location("N")
+    ax_below.grid(True, which="major", linestyle="dotted")
+
+    # For positively-increasing range (e.g., range(1, 90, 15)),
+    # labels go from middle to outside.
+    r_labels = [
+        "90" + degree_sign,
+        "",
+        "60" + degree_sign,
+        "",
+        "30" + degree_sign,
+        "",
+        "0" + degree_sign + " Alt.",
+    ]
+
+    theta_labels = []
+    for chunk in range(0, 7):
+        label_angle = (0.0 * u.deg * (1 / u.deg)) + (chunk * 45.0)
+        while label_angle >= 360.0:
+            label_angle -= 360.0
+        if chunk == 0:
+            theta_labels.append("N " + "\n" + str(label_angle) + degree_sign + " Az")
+        elif chunk == 2:
+            theta_labels.append("E" + "\n" + str(label_angle) + degree_sign)
+        elif chunk == 4:
+            theta_labels.append("S" + "\n" + str(label_angle) + degree_sign)
+        elif chunk == 6:
+            theta_labels.append("W" + "\n" + str(label_angle) + degree_sign)
+        else:
+            theta_labels.append(str(label_angle) + degree_sign)
+    theta_labels.append("")
+
+    aa_frame = coor.AltAz(obstime=test_date_utc_time, location=observing_location)
+    # Plot ecliptic
+    """
+    coord = SkyCoord(
+        lat=np.repeat(0, 100) * u.deg,
+        lon=np.linspace(0, 360, 100) * u.deg,
+        frame="geocentrictrueecliptic",
+    )
+    
+    az = coord.transform_to(aa_frame).az.rad
+    alt = coord.transform_to(aa_frame).alt.deg
+
+    sel_above = np.where(alt > 0)
+
+    ax_above.plot(
+        az[sel_above],
+        90 - alt[sel_above],
+        color="w",
+        linestyle="none",
+        marker="o",
+        markersize=2,
+        zorder=0,
+    )
+
+    sel_below = np.where(alt < 0)
+    ax_below.plot(
+        az[sel_below],
+        90 + alt[sel_below],
+        color="w",
+        linestyle="none",
+        marker="o",
+        markersize=2,
+        zorder=0,
+    )
+    """
+    # Plot nakṣatra grid
+    nakṣatra_edges = np.linspace(ayanāṃśa, ayanāṃśa + 26 * nakṣatra_extent, 27) % 360
+    nakṣatra_centers = nakṣatra_edges + nakṣatra_extent / 2
+    nakṣatra_names_tab = Table.read(nakṣatra_names_file, format="latex")
+    nakṣatra_names = nakṣatra_names_tab["names"].data
+
+    for edge in nakṣatra_edges:
+        edge_coord = SkyCoord(
+            lat=np.linspace(0, 30, 50) * u.deg,
+            lon=np.repeat(edge, 50) * u.deg,
+            frame="geocentrictrueecliptic",
+        )
+        edge_az = edge_coord.transform_to(aa_frame).az.rad
+        edge_alt = edge_coord.transform_to(aa_frame).alt.deg
+
+        edge_sel_above = np.where(edge_alt > 0)
+
+        ax_above.plot(
+            edge_az[edge_sel_above],
+            90 - edge_alt[edge_sel_above],
+            color="w",
+            linewidth=1,
+            zorder=0,
+            alpha=0.5,
+        )
+
+        edge_sel_below = np.where(edge_alt < 0)
+        ax_below.plot(
+            edge_az[edge_sel_below],
+            90 + edge_alt[edge_sel_below],
+            color="w",
+            linewidth=1,
+            zorder=0,
+            alpha=0.5,
+        )
+
+    for id, center in enumerate(nakṣatra_centers):
+        center_coord = SkyCoord(
+            lat=10 * u.deg, lon=center * u.deg, frame="geocentrictrueecliptic"
+        )
+
+        center_az = center_coord.transform_to(aa_frame).az.rad
+        center_alt = center_coord.transform_to(aa_frame).alt.deg
+
+        rot_val = 90
+
+        if center_alt > 0:
+            ax_above.text(
+                center_az,
+                90 - center_alt,
+                translit_str(nakṣatra_names[id], language),
+                rotation=rot_val,
+                ha="center",
+                va="center",
+                fontsize=7,
+                alpha=0.5,
+            )
+
+        else:
+            ax_below.text(
+                center_az,
+                90 + center_alt,
+                translit_str(nakṣatra_names[id], language),
+                rotation=rot_val,
+                ha="center",
+                va="center",
+                fontsize=7,
+                alpha=0.5,
+            )
+
+    # Plot rāśī grid
+    rāśi_edges = np.linspace(ayanāṃśa, ayanāṃśa + (rāśi_extent * 11), 12)
+    rāśi_centers = rāśi_edges + rāśi_extent / 2
+    rāśi_names_tab = Table.read(rāśi_names_file, format="latex")
+    rāśi_names = rāśi_names_tab["names"].data
+
+    for edge in rāśi_edges:
+        edge_coord = SkyCoord(
+            lat=np.linspace(-30, 0, 50) * u.deg,
+            lon=np.repeat(edge, 50) * u.deg,
+            frame="geocentrictrueecliptic",
+        )
+        edge_az = edge_coord.transform_to(aa_frame).az.rad
+        edge_alt = edge_coord.transform_to(aa_frame).alt.deg
+
+        edge_sel_above = np.where(edge_alt > 0)
+
+        ax_above.plot(
+            edge_az[edge_sel_above],
+            90 - edge_alt[edge_sel_above],
+            color="w",
+            linewidth=1,
+            zorder=0,
+            alpha=0.5,
+        )
+
+        edge_sel_below = np.where(edge_alt < 0)
+        ax_below.plot(
+            edge_az[edge_sel_below],
+            90 + edge_alt[edge_sel_below],
+            color="w",
+            linewidth=1,
+            zorder=0,
+            alpha=0.5,
+        )
+
+    for id, center in enumerate(rāśi_centers):
+        center_coord = SkyCoord(
+            lat=-10 * u.deg, lon=center * u.deg, frame="geocentrictrueecliptic"
+        )
+
+        center_az = center_coord.transform_to(aa_frame).az.rad
+        center_alt = center_coord.transform_to(aa_frame).alt.deg
+
+        rot_val = 90
+
+        if center_alt > 0:
+            ax_above.text(
+                center_az,
+                90 - center_alt,
+                translit_str(rāśi_names[id], language),
+                rotation=rot_val,
+                ha="center",
+                va="center",
+                fontsize=7,
+                alpha=0.5,
+            )
+
+        else:
+            ax_below.text(
+                center_az,
+                90 + center_alt,
+                translit_str(rāśi_names[id], language),
+                rotation=rot_val,
+                ha="center",
+                va="center",
+                fontsize=7,
+                alpha=0.5,
+            )
+
+    # Plot grahas
+    sun = get_body("sun", test_date_utc_time, location=observing_location).transform_to(
+        aa_frame
+    )
+    if sun.alt.deg > 0:
+        plot_sun((sun.az.rad, 90 - sun.alt.deg), 0.08, fig, ax_above)
+    else:
+        plot_sun((sun.az.rad, 90 + sun.alt.deg), 0.08, fig, ax_below)
+
+    moon = get_body(
+        "moon", test_date_utc_time, location=observing_location
+    ).transform_to(aa_frame)
+
+    if moon.alt.deg > 0:
+        plot_moon_phase(
+            30 - tithi, (moon.az.rad, 90 - moon.alt.deg), 0.08, fig, ax_above
+        )
+    else:
+        plot_moon_phase(
+            30 - tithi, (moon.az.rad, 90 + moon.alt.deg), 0.08, fig, ax_below
+        )
+    ### Inner grahas ###
+    sun = get_body("sun", test_date_utc_time, location=observing_location)
+
+    mercury = get_body("mercury", test_date_utc_time, location=observing_location)
+    venus = get_body("venus", test_date_utc_time, location=observing_location)
+
+    if sun.geocentrictrueecliptic.lon.deg > mercury.geocentrictrueecliptic.lon.deg:
+        mercury_angle_to_sun = 360 - (
+            sun.geocentrictrueecliptic.lon.deg - mercury.geocentrictrueecliptic.lon.deg
+        )
+    else:
+        mercury_angle_to_sun = (
+            mercury.geocentrictrueecliptic.lon.deg - sun.geocentrictrueecliptic.lon.deg
+        )
+
+    if sun.geocentrictrueecliptic.lon.deg > venus.geocentrictrueecliptic.lon.deg:
+        venus_angle_to_sun = 360 - (
+            sun.geocentrictrueecliptic.lon.deg - venus.geocentrictrueecliptic.lon.deg
+        )
+    else:
+        venus_angle_to_sun = (
+            venus.geocentrictrueecliptic.lon.deg - sun.geocentrictrueecliptic.lon.deg
+        )
+
+    if mercury.transform_to(aa_frame).alt.deg > 0:
+        plot_inner_graha_phase(
+            "budha",
+            360 - mercury_angle_to_sun,
+            [
+                mercury.transform_to(aa_frame).az.rad,
+                90 - mercury.transform_to(aa_frame).alt.deg,
+            ],
+            0.05,
+            fig,
+            ax_above,
+        )
+    else:
+        plot_inner_graha_phase(
+            "budha",
+            360 - mercury_angle_to_sun,
+            [
+                mercury.transform_to(aa_frame).az.rad,
+                90 + mercury.transform_to(aa_frame).alt.deg,
+            ],
+            0.05,
+            fig,
+            ax_below,
+        )
+
+    if venus.transform_to(aa_frame).alt.deg > 0:
+        plot_inner_graha_phase(
+            "shukra",
+            360 - venus_angle_to_sun,
+            [
+                venus.transform_to(aa_frame).az.rad,
+                90 - venus.transform_to(aa_frame).alt.deg,
+            ],
+            0.05,
+            fig,
+            ax_above,
+        )
+    else:
+        plot_inner_graha_phase(
+            "shukra",
+            360 - venus_angle_to_sun,
+            [
+                venus.transform_to(aa_frame).az.rad,
+                90 + venus.transform_to(aa_frame).alt.deg,
+            ],
+            0.05,
+            fig,
+            ax_below,
+        )
+
+    # Outer grahas
+
+    mars = get_body(
+        "mars", test_date_utc_time, location=observing_location
+    ).transform_to(aa_frame)
+    jupiter = get_body(
+        "jupiter", test_date_utc_time, location=observing_location
+    ).transform_to(aa_frame)
+    saturn = get_body(
+        "saturn", test_date_utc_time, location=observing_location
+    ).transform_to(aa_frame)
+
+    if mars.alt.deg > 0:
+        plot_outer_graha(
+            "mangala", [mars.az.rad, 90 - mars.alt.deg], 0.05, fig, ax_above
+        )
+    else:
+        plot_outer_graha(
+            "mangala", [mars.az.rad, 90 + mars.alt.deg], 0.05, fig, ax_below
+        )
+
+    if jupiter.alt.deg > 0:
+        plot_outer_graha(
+            "guru", [jupiter.az.rad, 90 - jupiter.alt.deg], 0.05, fig, ax_above
+        )
+    else:
+        plot_outer_graha(
+            "guru", [jupiter.az.rad, 90 + jupiter.alt.deg], 0.05, fig, ax_below
+        )
+
+    if saturn.alt.deg > 0:
+        plot_outer_graha(
+            "shani", [saturn.az.rad, 90 - saturn.alt.deg], 0.05, fig, ax_above
+        )
+    else:
+        plot_outer_graha(
+            "shani", [saturn.az.rad, 90 + saturn.alt.deg], 0.05, fig, ax_below
+        )
+    ax_above.plot(0, 0, marker="$\star$", color="white")
+    # Set ticks and labels.
+
+    alpha_val = 0.2
+
+    ax_above.set_rgrids(range(1, 106, 15), r_labels, angle=-45, alpha=alpha_val)
+    ax_above.set_thetagrids(range(0, 360, 45), theta_labels, alpha=alpha_val)
+    ax_above.grid(alpha=alpha_val)
+    ax_above.set_title("Above horizon")
+
+    ax_below.set_rgrids(range(1, 106, 15), r_labels, angle=-45, alpha=alpha_val)
+    ax_below.set_thetagrids(range(0, 360, 45), theta_labels, alpha=alpha_val)
+    ax_below.grid(alpha=alpha_val)
+    ax_below.set_title("Below horizon")
+
+    plt.savefig("sky_plot_at_test_time.pdf", bbox_inches="tight")
+
+    return fig, ax_above, ax_below
