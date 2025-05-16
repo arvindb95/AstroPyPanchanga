@@ -1261,7 +1261,7 @@ def make_sky_plot(
 
     for id, center in enumerate(nakṣatra_centers):
         center_coord = SkyCoord(
-            lat=10 * u.deg, lon=center * u.deg, frame="geocentrictrueecliptic"
+            lat=15 * u.deg, lon=center * u.deg, frame="geocentrictrueecliptic"
         )
 
         center_az = center_coord.transform_to(aa_frame).az.rad
@@ -1331,7 +1331,7 @@ def make_sky_plot(
 
     for id, center in enumerate(rāśi_centers):
         center_coord = SkyCoord(
-            lat=-10 * u.deg, lon=center * u.deg, frame="geocentrictrueecliptic"
+            lat=-15 * u.deg, lon=center * u.deg, frame="geocentrictrueecliptic"
         )
 
         center_az = center_coord.transform_to(aa_frame).az.rad
@@ -1496,7 +1496,46 @@ def make_sky_plot(
         plot_outer_graha(
             "shani", [saturn.az.rad, 90 + saturn.alt.deg], 0.05, fig, ax_below
         )
-    ax_above.plot(0, 0, marker="$\star$", color="white")
+
+    # plot stars
+    """
+    nakshatra_stars_tab = Table.read("prominent_star_data.txt", format="ascii")
+
+    star_name = nakshatra_stars_tab["name"]
+    lat = nakshatra_stars_tab["ecl_lat"]
+    lon = nakshatra_stars_tab["ecl_lon"]
+    vmag = nakshatra_stars_tab["vmag"]
+    color = nakshatra_stars_tab["color"]
+
+    star_coords = SkyCoord(
+        lat=lat * u.deg, lon=lon * u.deg, frame="geocentrictrueecliptic"
+    )
+
+    star_az = star_coords.transform_to(aa_frame).az.rad
+    star_alt = star_coords.transform_to(aa_frame).alt.deg
+
+    sel_stars_above = np.where(star_alt > 0)
+    sel_stars_below = np.where(star_alt < 0)
+
+    ax_above.scatter(
+        star_az[sel_stars_above],
+        star_alt[sel_stars_above],
+        marker=r"$\star$",
+        s=50 / vmag[sel_stars_above],
+        c=color[sel_stars_above],
+        cmap="RdYlBu_r",
+    )
+    ax_below.scatter(
+        star_az[sel_stars_below],
+        star_alt[sel_stars_below],
+        marker=r"$\star$",
+        s=50 / vmag[sel_stars_below],
+        c=color[sel_stars_below],
+        cmap="RdYlBu_r",
+    )
+
+    print(star_alt[sel_stars_below])
+    """
     # Set ticks and labels.
 
     alpha_val = 0.2
