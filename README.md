@@ -8,6 +8,11 @@ The included `plot_panchanga.py` script allows to visualise the positions of the
 <img src="https://github.com/arvindb95/AstroPyPanchanga/blob/main/panchanga_at_test_time-1.jpg" title="Sample circle plot" />
 </p>
 
+An alternate view is a sky plot as shown below. Use the `make_sky_plot` function to make this plot :
+<p align="center">
+<img src="https://github.com/arvindb95/AstroPyPanchanga/blob/main/sky_plot_at_test_time-1.jpg" title="Sample jatakam plot" />
+</p>
+
 The code also can calculate the _jātakaṃ_ (in the south indian traditional format) at the given time. Use the `make_jatakam_plot` function for this :
 <p align="center">
 <img src="https://github.com/arvindb95/AstroPyPanchanga/blob/main/jatakam_at_test_time-1.jpg" title="Sample jatakam plot"  width="50%"/>
