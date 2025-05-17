@@ -759,8 +759,6 @@ def make_circle_plot(
         test_date_utc_time, observing_location
     )
 
-    rahu_lambda, ketu_lambda = rahu_lambda, ketu_lambda
-
     plot_rahu([np.deg2rad(rahu_lambda), 1.9], 5, fig, ax)
     plot_ketu([np.deg2rad(ketu_lambda), 1.9], 5, fig, ax)
 
@@ -957,8 +955,6 @@ def make_jatakam_plot(
         test_date_utc_time, observing_location
     )
 
-    rahu_lambda, ketu_lambda = rahu_lambda, ketu_lambda
-
     lst_of_grahas_pos = [
         sun_lambda,
         moon_lambda,
@@ -1087,9 +1083,15 @@ def make_sky_plot(
     ayanāṃśa,
     tithi,
     tithi_name,
+    vāra,
+    nakṣatra,
+    pāda,
+    yoga,
+    karaṇa,
     language,
     nakṣatra_names_file="nakshatra_names.tex",
     rāśi_names_file="rashi_names.tex",
+    graha_names_file="graha_names.tex",
 ):
     ## Sanskrit typesetting using XeLaTeX ##
     mpl.use("pgf")
@@ -1112,12 +1114,12 @@ def make_sky_plot(
 
     observing_location = EarthLocation.of_address(location)
 
-    fig = plt.figure(facecolor="midnightblue", figsize=(12, 5))
+    fig = plt.figure(facecolor="midnightblue", figsize=(25, 5))
 
     fig.suptitle(
         translit_str(r" ॐ ", language),
     )
-    ax_above = fig.add_subplot(121, projection="polar")
+    ax_above = fig.add_subplot(142, projection="polar")
     ax_above.set_facecolor("midnightblue")
     ax_above.set_theta_zero_location("N")
     ax_above.set_theta_direction(-1)
@@ -1154,7 +1156,7 @@ def make_sky_plot(
             theta_labels.append(str(label_angle) + degree_sign)
     theta_labels.append("")
 
-    ax_below = fig.add_subplot(122, projection="polar")
+    ax_below = fig.add_subplot(143, projection="polar")
     ax_below.set_facecolor("black")
     ax_below.set_theta_zero_location("N")
     ax_below.grid(True, which="major", linestyle="dotted")
@@ -1497,8 +1499,59 @@ def make_sky_plot(
             "shani", [saturn.az.rad, 90 + saturn.alt.deg], 0.05, fig, ax_below
         )
 
+    # rahu and ketu
+
+    rahu_lambda, ketu_lambda = calc_rahu_ketu_pos(
+        test_date_utc_time, observing_location
+    )
+
+    rahu_coord = SkyCoord(
+        lat=0 * u.deg, lon=rahu_lambda * u.deg, frame="geocentrictrueecliptic"
+    )
+    ketu_coord = SkyCoord(
+        lat=0 * u.deg, lon=ketu_lambda * u.deg, frame="geocentrictrueecliptic"
+    )
+
+    if rahu_coord.transform_to(aa_frame).alt.deg > 0:
+        plot_rahu(
+            [
+                rahu_coord.transform_to(aa_frame).az.rad,
+                90 - rahu_coord.transform_to(aa_frame).alt.deg,
+            ],
+            5,
+            fig,
+            ax_above,
+        )
+        plot_ketu(
+            [
+                ketu_coord.transform_to(aa_frame).az.rad,
+                90 + ketu_coord.transform_to(aa_frame).alt.deg,
+            ],
+            5,
+            fig,
+            ax_below,
+        )
+    else:
+        plot_rahu(
+            [
+                rahu_coord.transform_to(aa_frame).az.rad,
+                90 + rahu_coord.transform_to(aa_frame).alt.deg,
+            ],
+            5,
+            fig,
+            ax_below,
+        )
+        plot_ketu(
+            [
+                ketu_coord.transform_to(aa_frame).az.rad,
+                90 - ketu_coord.transform_to(aa_frame).alt.deg,
+            ],
+            5,
+            fig,
+            ax_above,
+        )
+
     # plot stars
-    """
     nakshatra_stars_tab = Table.read("prominent_star_data.txt", format="ascii")
 
     star_name = nakshatra_stars_tab["name"]
@@ -1506,6 +1559,46 @@ def make_sky_plot(
     lon = nakshatra_stars_tab["ecl_lon"]
     vmag = nakshatra_stars_tab["vmag"]
     color = nakshatra_stars_tab["color"]
+
+    def plot_constellation_lines(star_1_name, star_2_name):
+        sel_star_1 = np.where(star_name == star_1_name)
+        sel_star_2 = np.where(star_name == star_2_name)
+
+        star_1_coord = SkyCoord(
+            lat=lat[sel_star_1] * u.deg,
+            lon=lon[sel_star_1] * u.deg,
+            frame="geocentrictrueecliptic",
+        )
+
+        star_1_az = star_1_coord.transform_to(aa_frame).az.rad
+        star_1_alt = star_1_coord.transform_to(aa_frame).alt.deg
+
+        star_2_coord = SkyCoord(
+            lat=lat[sel_star_2] * u.deg,
+            lon=lon[sel_star_2] * u.deg,
+            frame="geocentrictrueecliptic",
+        )
+        star_2_az = star_2_coord.transform_to(aa_frame).az.rad
+        star_2_alt = star_2_coord.transform_to(aa_frame).alt.deg
+
+        if (star_1_alt > 0) and (star_2_alt > 0):
+            ax_above.plot(
+                [star_1_az, star_2_az],
+                [90 - star_1_alt, 90 - star_2_alt],
+                color="white",
+            )
+        elif (star_1_alt > 0) and (star_2_alt > 0):
+            ax_below.plot(
+                [star_1_az, star_2_az],
+                [90 + star_1_alt, 90 + star_2_alt],
+                color="white",
+                zorder=-1,
+            )
+
+        return 0
+
+    plot_constellation_lines("alpha Arietis", "beta Arietis")
+    plot_constellation_lines("alpha Arietis", "41 Arietis")
 
     star_coords = SkyCoord(
         lat=lat * u.deg, lon=lon * u.deg, frame="geocentrictrueecliptic"
@@ -1519,23 +1612,95 @@ def make_sky_plot(
 
     ax_above.scatter(
         star_az[sel_stars_above],
-        star_alt[sel_stars_above],
+        90 - star_alt[sel_stars_above],
         marker=r"$\star$",
         s=50 / vmag[sel_stars_above],
         c=color[sel_stars_above],
         cmap="RdYlBu_r",
+        zorder=1,
     )
     ax_below.scatter(
         star_az[sel_stars_below],
-        star_alt[sel_stars_below],
+        90 + star_alt[sel_stars_below],
         marker=r"$\star$",
         s=50 / vmag[sel_stars_below],
         c=color[sel_stars_below],
         cmap="RdYlBu_r",
+        zorder=1,
     )
 
-    print(star_alt[sel_stars_below])
-    """
+    ################ legend for panchanga #####################
+    pañcāṅga_ax = fig.add_axes([0.25, 0.1, 0.08, 0.8], polar=False)
+    pañcāṅga_ax.axis("off")
+
+    pañcāṅga_ax.text(
+        0.1,
+        0.8,
+        location,
+        va="center",
+    )
+
+    pañcāṅga_ax.text(0.1, 0.75, date_str.split(" ")[0], va="center")
+
+    pañcāṅga_ax.text(0.1, 0.7, date_str.split(" ")[1], va="center")
+    pañcāṅga_ax.text(
+        0.3,
+        0.5,
+        translit_str("पञ्चाङ्गः ", language),
+        bbox=dict(facecolor="none", edgecolor="white"),
+        ha="center",
+        va="center",
+    )
+
+    pañcāṅga_ax.text(0.1, 0.4, translit_str(tithi_name, language), va="center")
+
+    pañcāṅga_ax.text(0.1, 0.35, translit_str(vāra, language), va="center")
+
+    pañcāṅga_ax.text(
+        0.1,
+        0.3,
+        translit_str(nakṣatra, language)
+        + r"\hspace{5pt}"
+        + translit_str(pāda, language),
+        va="center",
+    )
+
+    pañcāṅga_ax.text(0.1, 0.25, translit_str(yoga, language), va="center")
+    pañcāṅga_ax.text(0.1, 0.2, translit_str(karaṇa, language), va="center")
+
+    ################ legend for grahas #####################
+    graha_legend_ax = fig.add_axes([0.825 - 0.15, 0.1, 0.1, 0.8], polar=False)
+    graha_legend_ax.axis("off")
+    graha_tab = Table.read(graha_names_file, format="latex")
+
+    graha_names = graha_tab["names"].data
+
+    for graha_name_id in range(len(graha_names[:-1])):
+        graha_legend_ax.text(
+            0.4,
+            1 - (graha_name_id / 10) - 0.1,
+            translit_str(graha_names[graha_name_id], language),
+            va="center",
+        )
+
+    plot_sun((0.3, 0.9), 0.08, fig, graha_legend_ax)
+    plot_moon_phase(tithi, (0.3, 0.8), 0.08, fig, graha_legend_ax)
+
+    plot_inner_graha_phase(
+        "budha", mercury_angle_to_sun, (0.3, 0.7), 0.05, fig, graha_legend_ax
+    )
+    plot_inner_graha_phase(
+        "shukra", venus_angle_to_sun, (0.3, 0.6), 0.05, fig, graha_legend_ax
+    )
+    plot_outer_graha("mangala", (0.3, 0.5), 0.05, fig, graha_legend_ax)
+    plot_outer_graha("guru", (0.3, 0.4), 0.05, fig, graha_legend_ax)
+    plot_outer_graha("shani", (0.3, 0.3), 0.05, fig, graha_legend_ax)
+
+    plot_rahu((0.3, 0.2), 5, fig, graha_legend_ax)
+    plot_ketu((0.3, 0.1), 5, fig, graha_legend_ax)
+
+    graha_legend_ax.set_xlim(0.0, 0.55)
+
     # Set ticks and labels.
 
     alpha_val = 0.2
@@ -1549,7 +1714,6 @@ def make_sky_plot(
     ax_below.set_thetagrids(range(0, 360, 45), theta_labels, alpha=alpha_val)
     ax_below.grid(alpha=alpha_val)
     ax_below.set_title("Below horizon")
-
     plt.savefig("sky_plot_at_test_time.pdf", bbox_inches="tight")
 
     return fig, ax_above, ax_below
