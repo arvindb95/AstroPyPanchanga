@@ -1552,31 +1552,31 @@ def make_sky_plot(
         )
 
     # plot stars
-    nakshatra_stars_tab = Table.read("prominent_star_data.txt", format="ascii")
+    nakshatra_stars_tab = Table.read("prominent_star_details.csv", format="ascii.csv")
 
-    star_name = nakshatra_stars_tab["name"]
-    lat = nakshatra_stars_tab["ecl_lat"]
-    lon = nakshatra_stars_tab["ecl_lon"]
-    vmag = nakshatra_stars_tab["vmag"]
-    color = nakshatra_stars_tab["color"]
+    star_name = nakshatra_stars_tab["star_name"]
+    star_ra = nakshatra_stars_tab["star_ra"]
+    star_dec = nakshatra_stars_tab["star_dec"]
+    star_vmag = nakshatra_stars_tab["star_vmag"]
 
-    def plot_constellation_lines(star_1_name, star_2_name):
+    def plot_constellation_lines(star_names):
+        star_1_name, star_2_name = star_names
         sel_star_1 = np.where(star_name == star_1_name)
         sel_star_2 = np.where(star_name == star_2_name)
 
         star_1_coord = SkyCoord(
-            lat=lat[sel_star_1] * u.deg,
-            lon=lon[sel_star_1] * u.deg,
-            frame="geocentrictrueecliptic",
+            ra=star_ra[sel_star_1] * u.deg,
+            dec=star_dec[sel_star_1] * u.deg,
+            frame="icrs",
         )
 
         star_1_az = star_1_coord.transform_to(aa_frame).az.rad
         star_1_alt = star_1_coord.transform_to(aa_frame).alt.deg
 
         star_2_coord = SkyCoord(
-            lat=lat[sel_star_2] * u.deg,
-            lon=lon[sel_star_2] * u.deg,
-            frame="geocentrictrueecliptic",
+            ra=star_ra[sel_star_2] * u.deg,
+            dec=star_dec[sel_star_2] * u.deg,
+            frame="icrs",
         )
         star_2_az = star_2_coord.transform_to(aa_frame).az.rad
         star_2_alt = star_2_coord.transform_to(aa_frame).alt.deg
@@ -1586,23 +1586,44 @@ def make_sky_plot(
                 [star_1_az, star_2_az],
                 [90 - star_1_alt, 90 - star_2_alt],
                 color="white",
+                linewidth=1,
+                zorder=-1,
+                alpha=0.5,
             )
-        elif (star_1_alt > 0) and (star_2_alt > 0):
+        elif (star_1_alt < 0) and (star_2_alt < 0):
             ax_below.plot(
                 [star_1_az, star_2_az],
                 [90 + star_1_alt, 90 + star_2_alt],
                 color="white",
+                linewidth=1,
                 zorder=-1,
+                alpha=0.5,
             )
 
         return 0
 
-    plot_constellation_lines("alpha Arietis", "beta Arietis")
-    plot_constellation_lines("alpha Arietis", "41 Arietis")
+    list_of_lines = [
+        ("gamma Arietis", "beta Arietis"),
+        ("beta Arietis", "alpha Arietis"),
+        ("alpha Arietis", "41 Arietis"),
+        ("zeta Tauri", "alpha Tauri"),
+        ("beta Tauri", "tau Tauri"),
+        ("tau Tauri", "epsilon Tauri"),
+        ("alpha Tauri", "epsilon Tauri"),
+        ("alpha Tauri", "78 Tauri"),
+        ("epsilon Tauri", "68 Tauri"),
+        ("68 Tauri", "delat Tauri"),
+        ("78 Tauri", "gamma Tauri"),
+        ("delta Tauri", "gamma Tauri"),
+        ("delta Tauri", "27 Tauri"),
+        ("gamma Tauri", "lambda Tauri"),
+        ("lambda Tauri", "omicron Tauri"),
+    ]
 
-    star_coords = SkyCoord(
-        lat=lat * u.deg, lon=lon * u.deg, frame="geocentrictrueecliptic"
-    )
+    for line in list_of_lines:
+        plot_constellation_lines(line)
+
+    star_coords = SkyCoord(ra=star_ra * u.deg, dec=star_dec * u.deg, frame="icrs")
 
     star_az = star_coords.transform_to(aa_frame).az.rad
     star_alt = star_coords.transform_to(aa_frame).alt.deg
@@ -1613,19 +1634,22 @@ def make_sky_plot(
     ax_above.scatter(
         star_az[sel_stars_above],
         90 - star_alt[sel_stars_above],
-        marker=r"$\star$",
-        s=50 / vmag[sel_stars_above],
-        c=color[sel_stars_above],
-        cmap="RdYlBu_r",
+        marker="o",
+        s=10 / star_vmag[sel_stars_above],
+        # c=color[sel_stars_above],
+        # cmap="rainbow",
+        c="white",
         zorder=1,
     )
+
     ax_below.scatter(
         star_az[sel_stars_below],
         90 + star_alt[sel_stars_below],
-        marker=r"$\star$",
-        s=50 / vmag[sel_stars_below],
-        c=color[sel_stars_below],
-        cmap="RdYlBu_r",
+        marker=r"o",
+        s=10 / star_vmag[sel_stars_below],
+        # c=color[sel_stars_below],
+        # cmap="rainbow",
+        c="white",
         zorder=1,
     )
 
@@ -1684,13 +1708,13 @@ def make_sky_plot(
         )
 
     plot_sun((0.3, 0.9), 0.08, fig, graha_legend_ax)
-    plot_moon_phase(tithi, (0.3, 0.8), 0.08, fig, graha_legend_ax)
+    plot_moon_phase(30 - tithi, (0.3, 0.8), 0.08, fig, graha_legend_ax)
 
     plot_inner_graha_phase(
-        "budha", mercury_angle_to_sun, (0.3, 0.7), 0.05, fig, graha_legend_ax
+        "budha", 360 - mercury_angle_to_sun, (0.3, 0.7), 0.05, fig, graha_legend_ax
     )
     plot_inner_graha_phase(
-        "shukra", venus_angle_to_sun, (0.3, 0.6), 0.05, fig, graha_legend_ax
+        "shukra", 360 - venus_angle_to_sun, (0.3, 0.6), 0.05, fig, graha_legend_ax
     )
     plot_outer_graha("mangala", (0.3, 0.5), 0.05, fig, graha_legend_ax)
     plot_outer_graha("guru", (0.3, 0.4), 0.05, fig, graha_legend_ax)

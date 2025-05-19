@@ -265,7 +265,7 @@ def calc_pañcāṅga(
     )
 
     ### --------- Plotting ------------ ###
-    """
+
     make_circle_plot(
         test_date_utc_time,
         location,
@@ -304,7 +304,7 @@ def calc_pañcāṅga(
         rising_rāśi.geocentrictrueecliptic.lon.value,
         language=language,
     )
-    """
+
     make_sky_plot(
         test_date_utc_time,
         location,
