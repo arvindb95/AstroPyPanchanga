@@ -1191,40 +1191,7 @@ def make_sky_plot(
     theta_labels.append("")
 
     aa_frame = coor.AltAz(obstime=test_date_utc_time, location=observing_location)
-    # Plot ecliptic
-    """
-    coord = SkyCoord(
-        lat=np.repeat(0, 100) * u.deg,
-        lon=np.linspace(0, 360, 100) * u.deg,
-        frame="geocentrictrueecliptic",
-    )
-    
-    az = coord.transform_to(aa_frame).az.rad
-    alt = coord.transform_to(aa_frame).alt.deg
 
-    sel_above = np.where(alt > 0)
-
-    ax_above.plot(
-        az[sel_above],
-        90 - alt[sel_above],
-        color="w",
-        linestyle="none",
-        marker="o",
-        markersize=2,
-        zorder=0,
-    )
-
-    sel_below = np.where(alt < 0)
-    ax_below.plot(
-        az[sel_below],
-        90 + alt[sel_below],
-        color="w",
-        linestyle="none",
-        marker="o",
-        markersize=2,
-        zorder=0,
-    )
-    """
     # Plot nakṣatra grid
     nakṣatra_edges = np.linspace(ayanāṃśa, ayanāṃśa + 26 * nakṣatra_extent, 27) % 360
     nakṣatra_centers = nakṣatra_edges + nakṣatra_extent / 2
@@ -1233,7 +1200,7 @@ def make_sky_plot(
 
     for edge in nakṣatra_edges:
         edge_coord = SkyCoord(
-            lat=np.linspace(0, 30, 50) * u.deg,
+            lat=np.linspace(-30, 30, 50) * u.deg,
             lon=np.repeat(edge, 50) * u.deg,
             frame="geocentrictrueecliptic",
         )
@@ -1247,6 +1214,7 @@ def make_sky_plot(
             90 - edge_alt[edge_sel_above],
             color="w",
             linewidth=1,
+            linestyle="dashed",
             zorder=0,
             alpha=0.5,
         )
@@ -1257,6 +1225,7 @@ def make_sky_plot(
             90 + edge_alt[edge_sel_below],
             color="w",
             linewidth=1,
+            linestyle="dashed",
             zorder=0,
             alpha=0.5,
         )
@@ -1550,7 +1519,7 @@ def make_sky_plot(
             fig,
             ax_above,
         )
-
+    """
     # plot stars
     nakshatra_stars_tab = Table.read("prominent_star_details.csv", format="ascii.csv")
 
@@ -1585,7 +1554,7 @@ def make_sky_plot(
             ax_above.plot(
                 [star_1_az, star_2_az],
                 [90 - star_1_alt, 90 - star_2_alt],
-                color="white",
+                color="lime",
                 linewidth=1,
                 zorder=-1,
                 alpha=0.5,
@@ -1594,7 +1563,7 @@ def make_sky_plot(
             ax_below.plot(
                 [star_1_az, star_2_az],
                 [90 + star_1_alt, 90 + star_2_alt],
-                color="white",
+                color="lime",
                 linewidth=1,
                 zorder=-1,
                 alpha=0.5,
@@ -1618,6 +1587,67 @@ def make_sky_plot(
         ("delta Tauri", "27 Tauri"),
         ("gamma Tauri", "lambda Tauri"),
         ("lambda Tauri", "omicron Tauri"),
+        ("64 Orionis", "xi Orionis"),
+        ("54 Orionis", "nu Orionis"),
+        ("xi Orionis", "nu Orionis"),
+        ("xi Orionis", "mu Orionis"),
+        ("nu Orionis", "mu Orionis"),
+        ("mu Orionis", "alpha Orionis"),
+        ("alpha Orionis", "39 Orionis A"),
+        ("alpha Orionis", "zeta Orionis"),
+        ("39 Orionis A", "gamma Orionis"),
+        ("gamma Orionis", "1 Orionis"),
+        ("1 Orionis", "2 Orionis"),
+        ("2 Orionis", "7 Orionis"),
+        ("1 Orionis", "3 Orionis"),
+        ("3 Orionis", "5 Orionis"),
+        ("5 Orionis", "10 Orionis"),
+        ("gamma Orionis", "delta Orionis"),
+        ("zeta Orionis", "epsilon Orionis"),
+        ("epsilon Orionis", "delta Orionis"),
+        ("delta Orionis", "beta Orionis"),
+        ("beta Orionis", "kappa Orionis"),
+        ("kappa Orionis", "zeta Orionis"),
+        ("beta Geminorum", "upsilon Geminorum"),
+        ("upsilon Geminorum", "kappa Geminorum"),
+        ("upsilon Geminorum", "iota Geminorum"),
+        ("iota Geminorum", "tau Geminorum"),
+        ("tau Geminorum", "alpha Geminorum"),
+        ("tau Geminorum", "theta Geminorum"),
+        ("tau Geminorum", "epsilon Geminorum"),
+        ("epsilon Geminorum", "nu Geminorum"),
+        ("epsilon Geminorum", "mu Geminorum"),
+        ("mu Geminorum", "eta Geminorum"),
+        ("eta Geminorum", "1 Geminorum"),
+        ("upsilon Geminorum", "delta Geminorum"),
+        ("delta Geminorum", "lambda Geminorum"),
+        ("delta Geminorum", "zeta Geminorum"),
+        ("zeta Geminorum", "gamma Geminorum"),
+        ("lambda Geminorum", "xi Geminorum"),
+        ("alpha Cancri", "delta Cancri"),
+        ("beta Cancri", "delta Cancri"),
+        ("delta Cancri", "gamma Cancri"),
+        ("gamma Cancri", "chi Cancri"),
+        ("gamma Cancri", "iota Cancri"),
+        ("delta Hydrae", "epsilon Hydrae"),
+        ("delta Hydrae", "sigma Hydrae"),
+        ("epsilon Hydrae", "rho Hydrae"),
+        ("sigma Hydrae", "eta Hydrae"),
+        ("eta Hydrae", "rho Hydrae"),
+        ("rho Hydrae", "zeta Hydrae"),
+        ("zeta Hydrae", "theta Hydrae"),
+        ("theta Hydrae", "32 Hydrae"),
+        ("32 Hydrae", "31 Hydrae"),
+        ("31 Hydrae", "alpha Hydrae"),
+        ("alpha Hydrae", "39 Hydrae"),
+        ("39 Hydrae", "40 Hydrae"),
+        ("40 Hydrae", "lambda Hydrae"),
+        ("lambda Hydrae", "mu Hydrae"),
+        ("mu Hydrae", "nu Hydrae"),
+        ("nu Hydrae", "xi Hydrae"),
+        ("xi Hydrae", "beta Hydrae"),
+        ("beta Hydrae", "psi Hydrae"),
+        ("psi Hydrae", "gamma Hydrae"),
     ]
 
     for line in list_of_lines:
@@ -1640,6 +1670,8 @@ def make_sky_plot(
         # cmap="rainbow",
         c="white",
         zorder=1,
+        edgecolor="lime",
+        linewidth=0.5,
     )
 
     ax_below.scatter(
@@ -1651,8 +1683,10 @@ def make_sky_plot(
         # cmap="rainbow",
         c="white",
         zorder=1,
+        edgecolor="lime",
+        linewidth=0.5,
     )
-
+    """
     ################ legend for panchanga #####################
     pañcāṅga_ax = fig.add_axes([0.25, 0.1, 0.08, 0.8], polar=False)
     pañcāṅga_ax.axis("off")
@@ -1738,6 +1772,8 @@ def make_sky_plot(
     ax_below.set_thetagrids(range(0, 360, 45), theta_labels, alpha=alpha_val)
     ax_below.grid(alpha=alpha_val)
     ax_below.set_title("Below horizon")
-    plt.savefig("sky_plot_at_test_time.pdf", bbox_inches="tight")
+    plt.savefig(
+        "sky_plot_at_test_time.pdf", facecolor=fig.get_facecolor(), bbox_inches="tight"
+    )
 
     return fig, ax_above, ax_below
